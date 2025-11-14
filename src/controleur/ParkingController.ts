@@ -1,5 +1,5 @@
-import { Parking } from "../modele/Parking.ts";
-import { GeoLocation } from "../modele/GeoLocation.ts";
+import { Parking } from "../modele/Parking";
+import { GeoLocation } from "../modele/GeoLocation";
 
 export class ParkingController {
     private url = "https://www.data.gouv.fr/api/1/datasets/r/5ccdcfdc-0a8b-4524-9b59-7f0212e4ad5c";

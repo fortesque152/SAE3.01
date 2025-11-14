@@ -1,4 +1,4 @@
-import { GeoLocation } from "./GeoLocation.ts";
+import { GeoLocation } from "./GeoLocation";
 
 export class ParkingSpot {
 

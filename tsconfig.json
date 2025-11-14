@@ -1,10 +1,18 @@
+//commande pour lancer le serv http-server -c-1 
+
+
+
 {
   "compilerOptions": {
-    "target": "ES2020",      // version JS générée
-    "module": "ES2020",      // pour utiliser import/export
-    "rootDir": "./vue",      // dossier contenant tes .ts
-    "outDir": "./dist",      // dossier où mettre les .js générés
-    "strict": true
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "bundler",
+    "rootDir": "./src",
+    "outDir": "./module",
+    "strict": true,
+    "esModuleInterop": true,
+    "lib": ["DOM", "ES2020"],
+    "types": []
   },
-  "include": ["vue/**/*"]
+  "include": ["src/**/*"]
 }
