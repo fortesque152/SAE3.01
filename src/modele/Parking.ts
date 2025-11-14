@@ -1,5 +1,5 @@
-import { ParkingSpot } from "./ParkingSpot";
-import { GeoLocation } from "./GeoLocation";
+import { ParkingSpot } from "./ParkingSpot.js";
+import { GeoLocation } from "./GeoLocation.js";
 
 export class Parking {
 

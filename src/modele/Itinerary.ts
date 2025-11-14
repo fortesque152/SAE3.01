@@ -1,4 +1,4 @@
-import { GeoLocation } from "./GeoLocation";
+import { GeoLocation } from "./GeoLocation.js";
 export class Itinerary {
 
     private _start: GeoLocation;

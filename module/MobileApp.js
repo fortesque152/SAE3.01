@@ -1,8 +1,8 @@
-import { LocationController } from "./controleur/LocationController";
-import { ParkingController } from "./controleur/ParkingController";
-import { ItineraryController } from "./controleur/ItineraryController";
-import { MapView } from "./ui/MapView";
-import { UserProfile } from "./modele/UserProfile";
+import { LocationController } from "./controleur/LocationController.js";
+import { ParkingController } from "./controleur/ParkingController.js";
+import { ItineraryController } from "./controleur/ItineraryController.js";
+import { MapView } from "./ui/MapView.js";
+import { UserProfile } from "./modele/UserProfile.js";
 export class MobileApp {
     constructor() {
         this.user = new UserProfile("user-name", "user-surname");
@@ -13,7 +13,7 @@ export class MobileApp {
     }
     async start() {
         const userPos = await this.locCtrl.getUserLocation();
-        this.map.setUserMarker(userPos);
+        this.map.setUserMarker();
         const parkings = await this.parkCtrl.getParkings();
         const nearest = parkings.reduce((closest, curr) => {
             const dist = this.getDistance(userPos, curr.location);

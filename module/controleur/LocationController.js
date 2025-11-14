@@ -1,4 +1,4 @@
-import { GeoLocation } from "../modele/GeoLocation";
+import { GeoLocation } from "../modele/GeoLocation.js";
 export class LocationController {
     async getUserLocation() {
         return new Promise((resolve, reject) => {

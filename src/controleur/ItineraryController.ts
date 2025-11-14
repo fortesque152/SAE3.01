@@ -1,4 +1,4 @@
-import { GeoLocation } from "../modele/GeoLocation";
+import { GeoLocation } from "../modele/GeoLocation.js";
 
 export class ItineraryController {
     private apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjQ1NWJkNzU1OWM1YzQ4YzQ5YzEzYTBkNTY4ZTY5OWU4IiwiaCI6Im11cm11cjY0In0=";

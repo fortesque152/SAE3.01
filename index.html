@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <title>Carte Leaflet</title>
-
-    <!-- CSS de Leaflet -->
     <link rel="stylesheet" href="../api/leaflet/dist/leaflet.css">
-
-    <!-- Ton CSS personnalisé -->
     <style>
         #map {
             height: 500px;
@@ -15,40 +12,21 @@
         }
     </style>
 </head>
+
 <body>
     <h1>Carte Leaflet - Test</h1>
-
-    <!-- Conteneur de la carte -->
     <div id="map"></div>
-
-    <!-- Leaflet JS -->
     <script src="../api/leaflet/dist/leaflet.js"></script>
-
-    <!-- Script principal (compilé depuis TypeScript) -->
     <script type="module">
         import { MapView } from '../module/ui/MapView.js';
+        import { MobileApp } from '../module/MobileApp.js';
 
-        // Créer l'instance de la carte
         const mapView = new MapView();
+        const app = new MobileApp();
+        mapView.setUserMarker();
 
-        // Exemple : position de l'utilisateur
-        const userPosition = { latitude: 49.1193, longitude: 6.1757 };
-        mapView.setUserMarker(userPosition);
 
-        // Exemple : parking
-        const parking = {
-            name: "Parking Central",
-            location: { latitude: 49.121, longitude: 6.177 }
-        };
-        mapView.setParkingMarker(parking);
-
-        // Exemple : itinéraire simple
-        const route = [
-            [6.1757, 49.1193],
-            [6.177, 49.121],
-            [6.179, 49.122]
-        ];
-        mapView.drawRoute(route);
     </script>
 </body>
+
 </html>
