@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",      // version JS générée
+    "module": "ES2020",      // pour utiliser import/export
+    "rootDir": "./vue",      // dossier contenant tes .ts
+    "outDir": "./dist",      // dossier où mettre les .js générés
+    "strict": true
+  },
+  "include": ["vue/**/*"]
+}

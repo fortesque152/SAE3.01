@@ -1,38 +1,24 @@
 import { GeoLocation } from "./GeoLocation.ts";
 
-
 export class ParkingSpot {
-    private _id: number;
-    private _available: boolean;
+
+    private _id: string;
     private _position: GeoLocation;
+    private _available: boolean;
 
-    constructor(id: number, available: boolean, position: GeoLocation) {
+    constructor(id: string, position: GeoLocation, available: boolean) {
         this._id = id;
-        this._available = available;
         this._position = position;
-    }
-
-
-    get id(): number {
-        return this.id;
-    }
-    set id(value: number) {
-        this._id = value;
-    }
-
-    isAvailable(): boolean {
-        return this._available;
-    }
-
-    setAvailable(available: boolean): void {
         this._available = available;
-    }
+     }
 
-    getPosition(): GeoLocation {
-        return this._position;
+    getId() { 
+        return this._id; 
     }
-
-    setPosition(position: GeoLocation): void {
-        this._position = position;
+    isAvailable() { 
+        return this._available; 
+    }
+    getPosition() { 
+        return this._position; 
     }
 }
