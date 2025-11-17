@@ -20,11 +20,17 @@ export class ItineraryController {
             method: "POST",
             headers: {
                 "Authorization": this.apiKey,
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Accept": "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8"
             },
             body: JSON.stringify(body)
         });
 
+        if (!res.ok) {
+            // Fournir un message d'erreur plus explicite pour le debug côté client
+            const text = await res.text();
+            throw new Error(`Itinerary API error ${res.status}: ${text}`);
+        }
 
         return res.json();
     }

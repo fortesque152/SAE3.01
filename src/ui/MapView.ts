@@ -40,12 +40,22 @@ export class MapView {
 
     // Placer le marker utilisateur sans changer la vue
     async setUserMarker(location?: GeoLocation) {
+        const userIcon = L.icon({
+            iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png",
+            shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
         if (location) this.userPosition = location;
         if (!this.userPosition) return;
 
         if (!this.userMarker) {
             this.userMarker = L.marker([this.userPosition.latitude, this.userPosition.longitude], {
-                title: "Votre position"
+                title: "Votre position",
+                icon: userIcon
             }).addTo(this.map);
         } else {
             this.userMarker.setLatLng([this.userPosition.latitude, this.userPosition.longitude]);
@@ -63,11 +73,26 @@ export class MapView {
             console.warn('Impossible de lier la popup du parking', e);
         }
     }
-
-
+    
+    setNearestParkingMarker(parking: Parking) {
+        const iconP = L.icon({
+            iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png",
+            shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+        L.marker([parking.location.latitude, parking.location.longitude], {
+            title: "Parking le plus proche",
+            icon: iconP
+        }).addTo(this.map);
+    }
 
     drawRoute(polyline: any) {
         const coords = polyline.map((c: any) => [c[1], c[0]]);
         L.polyline(coords).addTo(this.map);
     }
+
+
 }

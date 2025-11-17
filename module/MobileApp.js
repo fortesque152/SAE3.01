@@ -2,10 +2,8 @@ import { LocationController } from "./controleur/LocationController.js";
 import { ParkingController } from "./controleur/ParkingController.js";
 import { ItineraryController } from "./controleur/ItineraryController.js";
 import { MapView } from "./ui/MapView.js";
-import { UserProfile } from "./modele/UserProfile.js";
 export class MobileApp {
     constructor() {
-        this.user = new UserProfile("user-name", "user-surname");
         this.map = new MapView();
         this.locCtrl = new LocationController();
         this.parkCtrl = new ParkingController();
@@ -29,18 +27,19 @@ export class MobileApp {
             return distCurr < distClosest ? curr : closest;
         }, parkings[0]);
         // mettre en évidence le plus proche (si MapView a une méthode dédiée, utilisez-la)
-        this.map.setParkingMarker(nearest);
+        this.map.setNearestParkingMarker(nearest);
         try {
             const route = await this.itineraryCtrl.getItinerary(userPos, nearest.location);
-            const geometry = route?.features?.[0]?.geometry?.coordinates;
-            if (!geometry) {
-                console.warn("Itinéraire sans géométrie");
-                return;
+            if (!route || !route.features || !route.features[0] || !route.features[0].geometry) {
+                console.error('Itinerary response malformée :', route);
             }
-            this.map.drawRoute(geometry);
+            else {
+                const geometry = route.features[0].geometry.coordinates;
+                this.map.drawRoute(geometry);
+            }
         }
         catch (err) {
-            console.error("Erreur lors de la récupération de l'itinéraire :", err);
+            console.error('Erreur lors de la récupération de l\'itinéraire :', err);
         }
     }
     getDistance(a, b) {
