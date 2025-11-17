@@ -1,20 +1,26 @@
 export class Parking {
-    constructor(id, address, location, spots) {
+    constructor(id, lib, location, spots) {
         this._id = id;
-        this._address = address;
+        this._lib = lib;
         this._spots = spots;
         this._location = location;
     }
     getId() {
         return this._id;
     }
-    getAddress() {
-        return this._address;
+    getlib() {
+        return this._lib;
     }
     getAvailableSpot() {
-        return this._spots.find(s => s.isAvailable()) || null;
+        if (this._spots > 0) {
+            return true;
+        }
+        return false;
     }
     get location() {
         return this._location;
+    }
+    updateAvailableSpots(available) {
+        this._spots = available;
     }
 }

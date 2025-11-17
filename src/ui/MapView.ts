@@ -39,7 +39,8 @@ export class MapView {
     }
 
     // Placer le marker utilisateur sans changer la vue
-    async setUserMarker() {
+    async setUserMarker(location?: GeoLocation) {
+        if (location) this.userPosition = location;
         if (!this.userPosition) return;
 
         if (!this.userMarker) {
@@ -52,10 +53,18 @@ export class MapView {
     }
 
     setParkingMarker(parking: Parking) {
-        L.marker([parking.location.latitude, parking.location.longitude], {
-            title: "a"
+        const marker = L.marker([parking.location.latitude, parking.location.longitude], {
+            title: parking.getlib()
         }).addTo(this.map);
+        try {
+            marker.bindPopup(`<strong>${parking.getlib()}</strong>`);
+        } catch (e) {
+            // Ne pas bloquer si bindPopup n'est pas disponible
+            console.warn('Impossible de lier la popup du parking', e);
+        }
     }
+
+
 
     drawRoute(polyline: any) {
         const coords = polyline.map((c: any) => [c[1], c[0]]);
