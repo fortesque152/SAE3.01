@@ -1,32 +1,22 @@
 <!DOCTYPE html>
 <html lang="fr">
-
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Carte Leaflet</title>
-    <link rel="stylesheet" href="../api/leaflet/dist/leaflet.css">
-    <style>
-        #map {
-            height: 500px;
-            width: 100%;
-        }
-    </style>
-</head>
+    <link rel="stylesheet" href="../api/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-<body>
-    <h1>Carte Leaflet - Test</h1>
+  <body>
     <div id="map"></div>
     <script src="../api/leaflet/dist/leaflet.js"></script>
     <script type="module">
-        import { MapView } from '../module/ui/MapView.js';
-        import { MobileApp } from '../module/MobileApp.js';
+      import { MapView } from "../module/ui/MapView.js";
+      import { MobileApp } from "../module/MobileApp.js";
 
-        
-        const app = new MobileApp();
-        app.start();
-
-
+      const app = new MobileApp();
+      app.start();
     </script>
-</body>
-
+  </body>
 </html>
