@@ -4,6 +4,8 @@ import { ItineraryController } from "./controleur/ItineraryController.js";
 import { MapView } from "./ui/MapView.js";
 import { UserProfile } from "./modele/UserProfile.js";
 import { GeoLocation } from "./modele/GeoLocation.js";
+const loader = (document.getElementById("loaderContainer") as HTMLElement)!;
+loader.style.display = "hidden";
 
 export class MobileApp {
   private map: MapView;
@@ -19,6 +21,7 @@ export class MobileApp {
   }
 
   async start() {
+    loader.style.display = "flex";
     const userPos = await this.locCtrl.getUserLocation();
     // passer la position utilisateur au MapView
     this.map.setUserMarker(userPos);
@@ -61,6 +64,8 @@ export class MobileApp {
       }
     } catch (err) {
       console.error("Erreur lors de la récupération de l'itinéraire :", err);
+    } finally {
+      loader.style.display = "none";
     }
   }
 

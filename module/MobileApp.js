@@ -2,6 +2,8 @@ import { LocationController } from "./controleur/LocationController.js";
 import { ParkingController } from "./controleur/ParkingController.js";
 import { ItineraryController } from "./controleur/ItineraryController.js";
 import { MapView } from "./ui/MapView.js";
+const loader = document.getElementById("loaderContainer");
+loader.style.display = "hidden";
 export class MobileApp {
     constructor() {
         this.map = new MapView();
@@ -10,6 +12,7 @@ export class MobileApp {
         this.itineraryCtrl = new ItineraryController();
     }
     async start() {
+        loader.style.display = "flex";
         const userPos = await this.locCtrl.getUserLocation();
         // passer la position utilisateur au MapView
         this.map.setUserMarker(userPos);
@@ -30,8 +33,11 @@ export class MobileApp {
         this.map.setNearestParkingMarker(nearest);
         try {
             const route = await this.itineraryCtrl.getItinerary(userPos, nearest.location);
-            if (!route || !route.features || !route.features[0] || !route.features[0].geometry) {
-                console.error('Itinerary response malformée :', route);
+            if (!route ||
+                !route.features ||
+                !route.features[0] ||
+                !route.features[0].geometry) {
+                console.error("Itinerary response malformée :", route);
             }
             else {
                 const geometry = route.features[0].geometry.coordinates;
@@ -39,16 +45,20 @@ export class MobileApp {
             }
         }
         catch (err) {
-            console.error('Erreur lors de la récupération de l\'itinéraire :', err);
+            console.error("Erreur lors de la récupération de l'itinéraire :", err);
+        }
+        finally {
+            loader.style.display = "none";
         }
     }
     getDistance(a, b) {
         const R = 6371e3;
-        const φ1 = a.latitude * Math.PI / 180;
-        const φ2 = b.latitude * Math.PI / 180;
-        const Δφ = (b.latitude - a.latitude) * Math.PI / 180;
-        const Δλ = (b.longitude - a.longitude) * Math.PI / 180;
-        const x = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+        const φ1 = (a.latitude * Math.PI) / 180;
+        const φ2 = (b.latitude * Math.PI) / 180;
+        const Δφ = ((b.latitude - a.latitude) * Math.PI) / 180;
+        const Δλ = ((b.longitude - a.longitude) * Math.PI) / 180;
+        const x = Math.sin(Δφ / 2) ** 2 +
+            Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
         return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
     }
 }
