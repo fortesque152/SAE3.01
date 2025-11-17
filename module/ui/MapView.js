@@ -4,9 +4,9 @@ export class MapView {
         this.userMarker = null;
         this.userPosition = null;
         // Création de la carte avec coordonnées temporaires
-        this.map = L.map('map').setView([0, 0], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
+        this.map = L.map("map").setView([49.118751230612446, 6.174603783729645], 13);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "© OpenStreetMap",
         }).addTo(this.map);
         // Centrer la carte sur l'utilisateur au démarrage
         this.initMapCenter();
@@ -33,7 +33,7 @@ export class MapView {
             iconSize: [25, 41],
             iconAnchor: [12, 41],
             popupAnchor: [1, -34],
-            shadowSize: [41, 41]
+            shadowSize: [41, 41],
         });
         if (location)
             this.userPosition = location;
@@ -42,23 +42,26 @@ export class MapView {
         if (!this.userMarker) {
             this.userMarker = L.marker([this.userPosition.latitude, this.userPosition.longitude], {
                 title: "Votre position",
-                icon: userIcon
+                icon: userIcon,
             }).addTo(this.map);
         }
         else {
-            this.userMarker.setLatLng([this.userPosition.latitude, this.userPosition.longitude]);
+            this.userMarker.setLatLng([
+                this.userPosition.latitude,
+                this.userPosition.longitude,
+            ]);
         }
     }
     setParkingMarker(parking) {
         const marker = L.marker([parking.location.latitude, parking.location.longitude], {
-            title: parking.getlib()
+            title: parking.getlib(),
         }).addTo(this.map);
         try {
             marker.bindPopup(`<strong>${parking.getlib()}</strong>`);
         }
         catch (e) {
             // Ne pas bloquer si bindPopup n'est pas disponible
-            console.warn('Impossible de lier la popup du parking', e);
+            console.warn("Impossible de lier la popup du parking", e);
         }
     }
     setNearestParkingMarker(parking) {
@@ -68,11 +71,11 @@ export class MapView {
             iconSize: [25, 41],
             iconAnchor: [12, 41],
             popupAnchor: [1, -34],
-            shadowSize: [41, 41]
+            shadowSize: [41, 41],
         });
         L.marker([parking.location.latitude, parking.location.longitude], {
             title: "Parking le plus proche",
-            icon: iconP
+            icon: iconP,
         }).addTo(this.map);
     }
     drawRoute(polyline) {
