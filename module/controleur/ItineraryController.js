@@ -3,7 +3,8 @@ export class ItineraryController {
         this.apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjQ1NWJkNzU1OWM1YzQ4YzQ5YzEzYTBkNTY4ZTY5OWU4IiwiaCI6Im11cm11cjY0In0=";
     }
     async getItinerary(start, end) {
-        const url = `https://api.openrouteservice.org/v2/directions/driving-car`;
+        const url = `https://api.openrouteservice.org/v2/directions/driving-car/geojson
+`;
         const body = {
             coordinates: [
                 [start.longitude, start.latitude],

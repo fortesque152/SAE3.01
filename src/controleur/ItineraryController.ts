@@ -5,7 +5,8 @@ export class ItineraryController {
 
 
     async getItinerary(start: GeoLocation, end: GeoLocation): Promise<any> {
-        const url = `https://api.openrouteservice.org/v2/directions/driving-car`;
+        const url = `https://api.openrouteservice.org/v2/directions/driving-car/geojson
+`;
 
 
         const body = {
