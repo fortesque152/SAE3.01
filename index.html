@@ -1,25 +1,60 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Carte Leaflet</title>
-    <link rel="stylesheet" href="../api/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carte Leaflet</title>
+  <link rel="stylesheet" href="../api/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-  <body>
-    <div id="loaderContainer">
-      <span id="loader"></span>
-      <h4>Chargement en cours...</h4>
-    </div>
-    <div id="map"></div>
-    <script src="../api/leaflet/dist/leaflet.js"></script>
-    <script type="module">
-      import { MobileApp } from "../module/MobileApp.js";
+<body>
 
-      const app = new MobileApp();
-      app.start();
-    </script>
-  </body>
+  <div id="loaderContainer">
+    <span id="loader"></span>
+    <h4>Chargement en cours...</h4>
+  </div>
+
+  <div id="map"></div>
+
+  <div id="routeInfo"></div>
+
+  <button id="routeBtn">rechercher un itineraire</button>
+
+  <script src="../api/leaflet/dist/leaflet.js"></script>
+
+  <script type="module">
+    import { MobileApp } from "../module/MobileApp.js";
+
+    const app = new MobileApp();
+
+    const routeBtn = document.getElementById("routeBtn");
+    const routeInfo = document.getElementById("routeInfo");
+
+    const originalShowRoute = app.showRoute.bind(app);
+    app.showRoute = async () => {
+      console.log("showRoute bloqué pour l'instant");
+    };
+
+    app.start();
+
+    routeBtn.addEventListener("click", async () => {
+      if (!app.userPos || !app.nearestParking) {
+        alert("position en cour de recuperation");
+        return;
+      }
+
+      routeBtn.disabled = true;
+      routeBtn.textContent = "Itinéraire affiché";
+
+      const result = await originalShowRoute(app.userPos, app.nearestParking.location);
+
+      if (result) {
+        routeInfo.textContent = `Distance : ${result.distanceKm} km | Durée : ${result.duration}`;
+        routeInfo.style.display = "block";
+      }
+    });
+  </script>
+
+</body>
 </html>

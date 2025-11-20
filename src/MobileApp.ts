@@ -3,10 +3,13 @@ import { ParkingController } from "./controleur/ParkingController.js";
 import { ItineraryController } from "./controleur/ItineraryController.js";
 import { MapView } from "./ui/MapView.js";
 import { GeoLocation } from "./modele/GeoLocation.js";
-const loader = (document.getElementById("loaderContainer") as HTMLElement)!;
-loader.style.display = "hidden";
+
+const loader = document.getElementById("loaderContainer") as HTMLElement;
 
 export class MobileApp {
+  public userPos: GeoLocation | null = null;
+  public nearestParking: any = null;
+
   private map: MapView;
   private locCtrl: LocationController;
   private parkCtrl: ParkingController;
@@ -20,40 +23,41 @@ export class MobileApp {
   }
 
   async start() {
-
+    loader.style.display = "flex";
     try {
-      loader.style.display = "flex";
       const userPos = await this.locCtrl.getUserLocation();
+      this.userPos = userPos;
+
       this.map.setUserMarker(userPos);
 
       const parkings = await this.parkCtrl.getParkings();
+
       if (!parkings || parkings.length === 0) {
         console.warn("Aucun parking trouvé");
         return;
       }
 
-      const nearest = parkings.reduce((closest, curr) => {
+      this.nearestParking = parkings.reduce((closest, curr) => {
         const distCurr = this.getDistance(userPos, curr.location);
         const distClosest = this.getDistance(userPos, closest.location);
         return distCurr < distClosest ? curr : closest;
       }, parkings[0]);
 
       for (const p of parkings) {
-        if (p !== nearest) {
-          this.map.setParkingMarker(p);
-        }
+        if (p !== this.nearestParking) this.map.setParkingMarker(p);
       }
 
-      this.map.setNearestParkingMarker(nearest);
+      this.map.setNearestParkingMarker(this.nearestParking);
 
-      await this.showRoute(userPos, nearest.location);
+      console.log("Application prête. En attente du bouton…");
 
     } catch (err) {
-      console.error("Erreur lors du démarrage de l'application :", err);
+      console.error("Erreur dans start() :", err);
     } finally {
-      loader.style.display = "none"; // cacher loader
+      loader.style.display = "none";
     }
   }
+
   private getDistance(a: GeoLocation, b: GeoLocation): number {
     const R = 6371e3;
     const φ1 = (a.latitude * Math.PI) / 180;
@@ -67,36 +71,31 @@ export class MobileApp {
     return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
   }
 
-
   async showRoute(start: GeoLocation, end: GeoLocation) {
     const route = await this.itineraryCtrl.getItinerary(start, end);
 
-    if (!route || !route.features || !route.features[0] || !route.features[0].geometry) {
-        console.error("Itinerary response malformée :", route);
-        return;
+    if (!route || !route.features || !route.features[0]?.geometry) {
+      console.error("Itinerary response malformée :", route);
+      return null;
     }
 
     const coordinates = route.features[0].geometry.coordinates;
-
     this.map.drawRoute(coordinates);
 
     const summary = route.features[0].properties.summary;
+
     const distanceKm = (summary.distance / 1000).toFixed(1);
 
     let durationStr: string;
     if (summary.duration < 3600) {
-        const minutes = Math.round(summary.duration / 60);
-        durationStr = `${minutes} min`;
+      const minutes = Math.round(summary.duration / 60);
+      durationStr = `${minutes} min`;
     } else {
-        const hours = Math.floor(summary.duration / 3600);
-        const minutes = Math.round((summary.duration % 3600) / 60);
-        durationStr = `${hours} h ${minutes} min`;
+      const hours = Math.floor(summary.duration / 3600);
+      const minutes = Math.round((summary.duration % 3600) / 60);
+      durationStr = `${hours} h ${minutes} min`;
     }
 
-    console.log(`Distance : ${distanceKm} km, Durée : ${durationStr}`);
-
     return { distanceKm: Number(distanceKm), duration: durationStr };
+  }
 }
-
-}
-

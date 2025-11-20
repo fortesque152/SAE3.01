@@ -3,42 +3,43 @@ import { ParkingController } from "./controleur/ParkingController.js";
 import { ItineraryController } from "./controleur/ItineraryController.js";
 import { MapView } from "./ui/MapView.js";
 const loader = document.getElementById("loaderContainer");
-loader.style.display = "hidden";
 export class MobileApp {
     constructor() {
+        this.userPos = null;
+        this.nearestParking = null;
         this.map = new MapView();
         this.locCtrl = new LocationController();
         this.parkCtrl = new ParkingController();
         this.itineraryCtrl = new ItineraryController();
     }
     async start() {
+        loader.style.display = "flex";
         try {
-            loader.style.display = "flex";
             const userPos = await this.locCtrl.getUserLocation();
+            this.userPos = userPos;
             this.map.setUserMarker(userPos);
             const parkings = await this.parkCtrl.getParkings();
             if (!parkings || parkings.length === 0) {
                 console.warn("Aucun parking trouvé");
                 return;
             }
-            const nearest = parkings.reduce((closest, curr) => {
+            this.nearestParking = parkings.reduce((closest, curr) => {
                 const distCurr = this.getDistance(userPos, curr.location);
                 const distClosest = this.getDistance(userPos, closest.location);
                 return distCurr < distClosest ? curr : closest;
             }, parkings[0]);
             for (const p of parkings) {
-                if (p !== nearest) {
+                if (p !== this.nearestParking)
                     this.map.setParkingMarker(p);
-                }
             }
-            this.map.setNearestParkingMarker(nearest);
-            await this.showRoute(userPos, nearest.location);
+            this.map.setNearestParkingMarker(this.nearestParking);
+            console.log("Application prête. En attente du bouton…");
         }
         catch (err) {
-            console.error("Erreur lors du démarrage de l'application :", err);
+            console.error("Erreur dans start() :", err);
         }
         finally {
-            loader.style.display = "none"; // cacher loader
+            loader.style.display = "none";
         }
     }
     getDistance(a, b) {
@@ -53,9 +54,9 @@ export class MobileApp {
     }
     async showRoute(start, end) {
         const route = await this.itineraryCtrl.getItinerary(start, end);
-        if (!route || !route.features || !route.features[0] || !route.features[0].geometry) {
+        if (!route || !route.features || !route.features[0]?.geometry) {
             console.error("Itinerary response malformée :", route);
-            return;
+            return null;
         }
         const coordinates = route.features[0].geometry.coordinates;
         this.map.drawRoute(coordinates);
@@ -71,7 +72,6 @@ export class MobileApp {
             const minutes = Math.round((summary.duration % 3600) / 60);
             durationStr = `${hours} h ${minutes} min`;
         }
-        console.log(`Distance : ${distanceKm} km, Durée : ${durationStr}`);
         return { distanceKm: Number(distanceKm), duration: durationStr };
     }
 }
