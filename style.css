@@ -30,7 +30,7 @@ body {
   height: 100%;
   background-color: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(1px);
-  z-index: 999;
+  z-index: 1000;
 }
 
 #loader {
@@ -60,28 +60,9 @@ body {
 
 #routeBtn {
   position: absolute;
-  bottom: 20px;   /* distance depuis le bas */
-  right: 20px;    /* distance depuis la droite */
-  z-index: 1000;  /* au-dessus de la carte et du loader */
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-#routeBtn:hover {
-  background-color: #0056b3;
-}
-
-
-#routeBtn {
-  position: absolute;
   bottom: 20px;
   right: 20px;
-  z-index: 1000;
+  z-index: 999;
   padding: 10px 15px;
   background: #0078ff;
   color: white;
@@ -89,6 +70,10 @@ body {
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
+}
+
+#routeBtn:hover {
+  background-color: #0056b3;
 }
 
 #routeBtn:disabled {
