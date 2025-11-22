@@ -4,31 +4,25 @@ export class MapView {
         this.userMarker = null;
         this.userPosition = null;
         this.routeLayer = null;
-        // Création de la carte avec coordonnées temporaires
         this.map = L.map("map").setView([49.118751230612446, 6.174603783729645], 13);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "© OpenStreetMap",
             noWrap: true
         }).addTo(this.map);
-        // Centrer la carte sur l'utilisateur au démarrage
         this.initMapCenter();
     }
-    // Récupérer la position et centrer la carte
     async initMapCenter() {
         try {
             const locationController = new LocationController();
             this.userPosition = await locationController.getUserLocation();
-            // Centrer la carte sur la position réelle
             this.map.setView([this.userPosition.latitude, this.userPosition.longitude], 15);
-            // Placer le marker initial
             this.setUserMarker();
         }
         catch (err) {
             console.error("Impossible de récupérer la géolocalisation :", err);
         }
     }
-    // Placer le marker utilisateur sans changer la vue
-    async setUserMarker(location) {
+    async setUserMarker(location, recenter = true) {
         const userIcon = L.icon({
             iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png",
             shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
@@ -53,6 +47,14 @@ export class MapView {
                 this.userPosition.latitude,
                 this.userPosition.longitude,
             ]);
+        }
+        if (recenter) {
+            try {
+                this.map.panTo([this.userPosition.latitude, this.userPosition.longitude]);
+            }
+            catch (e) {
+                // ignore pan errors
+            }
         }
     }
     setParkingMarker(parking) {
@@ -81,16 +83,19 @@ export class MapView {
         }).addTo(this.map);
         marker.bindPopup(`<strong>Parking le plus proche</strong><br>${parking.getlib()}`);
     }
-    drawRoute(polyline) {
+    drawRoute(polyline, currentPos, fitBounds = false) {
         if (!polyline || !Array.isArray(polyline) || polyline.length === 0)
             return;
         const coords = polyline.map((c) => [c[1], c[0]]);
+        if (currentPos) {
+            coords.unshift([currentPos.latitude, currentPos.longitude]);
+        }
         if (this.routeLayer) {
             this.map.removeLayer(this.routeLayer);
             this.routeLayer = null;
         }
         this.routeLayer = L.polyline(coords, { color: 'blue', weight: 4, opacity: 0.8 }).addTo(this.map);
-        if (this.routeLayer && !this.routeLayer.hasFitBounds) {
+        if (fitBounds && this.routeLayer && !this.routeLayer.hasFitBounds) {
             this.map.fitBounds(this.routeLayer.getBounds(), { padding: [50, 50] });
             this.routeLayer.hasFitBounds = true;
         }

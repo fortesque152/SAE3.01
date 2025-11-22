@@ -9,6 +9,7 @@ const loader = document.getElementById("loaderContainer") as HTMLElement;
 export class MobileApp {
   public userPos: GeoLocation | null = null;
   public nearestParking: any = null;
+  private watchId: number | null = null;
 
   private map: MapView;
   private locCtrl: LocationController;
@@ -47,9 +48,10 @@ export class MobileApp {
         if (p !== this.nearestParking) this.map.setParkingMarker(p);
       }
 
-      this.map.setNearestParkingMarker(this.nearestParking);
+        this.map.setNearestParkingMarker(this.nearestParking);
 
-      console.log("Application prête. En attente du bouton…");
+        console.log("Application prête. Démarrage du suivi GPS en continu...");
+        this.startTracking();
 
     } catch (err) {
       console.error("Erreur dans start() :", err);
@@ -80,7 +82,7 @@ export class MobileApp {
     }
 
     const coordinates = route.features[0].geometry.coordinates;
-    this.map.drawRoute(coordinates);
+    this.map.drawRoute(coordinates, start);
 
     const summary = route.features[0].properties.summary;
 
@@ -97,5 +99,63 @@ export class MobileApp {
     }
 
     return { distanceKm: Number(distanceKm), duration: durationStr };
+  }
+
+  public startTracking(): void {
+    if (!navigator.geolocation) {
+      console.warn("Géolocalisation non disponible");
+      return;
+    }
+
+    if (!this.nearestParking || !this.nearestParking.location) {
+      console.warn("Nearest parking non défini — démarrage du tracking impossible");
+      return;
+    }
+
+    if (this.watchId !== null) {
+      navigator.geolocation.clearWatch(this.watchId);
+      this.watchId = null;
+    }
+
+    this.watchId = navigator.geolocation.watchPosition(
+      async (pos) => {
+        try {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+
+          this.userPos = new GeoLocation(lat, lon);
+
+          this.map.setUserMarker(this.userPos);
+
+          const route = await this.itineraryCtrl.getItinerary(this.userPos, this.nearestParking.location);
+          if (route && route.features && route.features[0]?.geometry) {
+            const coordinates = route.features[0].geometry.coordinates;
+            this.map.drawRoute(coordinates, this.userPos);
+            const summary = route.features[0].properties.summary;
+            const distanceKm = (summary.distance / 1000).toFixed(1);
+            let durationStr: string;
+            if (summary.duration < 3600) {
+              const minutes = Math.round(summary.duration / 60);
+              durationStr = `${minutes} min`;
+            } else {
+              const hours = Math.floor(summary.duration / 3600);
+              const minutes = Math.round((summary.duration % 3600) / 60);
+              durationStr = `${hours} h ${minutes} min`;
+            }
+            const routeInfoEl = document.getElementById("routeInfo");
+            if (routeInfoEl) routeInfoEl.textContent = `${Number(distanceKm)} km • ${durationStr}`;
+          } else {
+            const routeInfoEl = document.getElementById("routeInfo");
+            if (routeInfoEl) routeInfoEl.textContent = "Itinéraire indisponible";
+          }
+        } catch (err) {
+          console.error("Erreur dans watchPosition :", err);
+        }
+      },
+      (err) => {
+        console.error("Erreur watchPosition :", err);
+      },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+    );
   }
 }
