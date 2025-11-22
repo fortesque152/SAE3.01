@@ -53,7 +53,6 @@ export class MapView {
                 this.map.panTo([this.userPosition.latitude, this.userPosition.longitude]);
             }
             catch (e) {
-                // ignore pan errors
             }
         }
     }

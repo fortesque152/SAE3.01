@@ -108,7 +108,7 @@ export class MobileApp {
     }
 
     if (!this.nearestParking || !this.nearestParking.location) {
-      console.warn("Nearest parking non défini — démarrage du tracking impossible");
+      console.warn("Parking le plus proche introuvable");
       return;
     }
 
