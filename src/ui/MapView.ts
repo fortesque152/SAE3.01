@@ -18,7 +18,7 @@ export class MapView {
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap",
-      noWrap: true
+      noWrap: true,
     }).addTo(this.map);
 
     this.initMapCenter();
@@ -73,9 +73,11 @@ export class MapView {
 
     if (recenter) {
       try {
-        this.map.panTo([this.userPosition.latitude, this.userPosition.longitude]);
-      } catch (e) {
-      }
+        this.map.panTo([
+          this.userPosition.latitude,
+          this.userPosition.longitude,
+        ]);
+      } catch (e) {}
     }
   }
 
@@ -95,8 +97,10 @@ export class MapView {
 
   setNearestParkingMarker(parking: Parking) {
     const iconP = L.icon({
-      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
-      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+      iconUrl:
+        "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+      shadowUrl:
+        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       iconSize: [25, 41],
       iconAnchor: [12, 41],
       popupAnchor: [1, -34],
@@ -110,11 +114,16 @@ export class MapView {
         icon: iconP,
       }
     ).addTo(this.map);
-    marker.bindPopup(`<strong>Parking le plus proche</strong><br>${parking.getlib()}`);
+    marker.bindPopup(
+      `<strong>Parking le plus proche</strong><br>${parking.getlib()}`
+    );
   }
 
-
-  drawRoute(polyline: any, currentPos?: GeoLocation, fitBounds: boolean = false) {
+  drawRoute(
+    polyline: any,
+    currentPos?: GeoLocation,
+    fitBounds: boolean = true
+  ) {
     if (!polyline || !Array.isArray(polyline) || polyline.length === 0) return;
 
     const coords = polyline.map((c: any) => [c[1], c[0]]);
@@ -128,13 +137,15 @@ export class MapView {
       this.routeLayer = null;
     }
 
-    this.routeLayer = L.polyline(coords, { color: 'blue', weight: 4, opacity: 0.8 }).addTo(this.map);
+    this.routeLayer = L.polyline(coords, {
+      color: "blue",
+      weight: 4,
+      opacity: 0.8,
+    }).addTo(this.map);
 
     if (fitBounds && this.routeLayer && !this.routeLayer.hasFitBounds) {
       this.map.fitBounds(this.routeLayer.getBounds(), { padding: [50, 50] });
       (this.routeLayer as any).hasFitBounds = true;
     }
   }
-
-
 }

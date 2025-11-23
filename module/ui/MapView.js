@@ -7,7 +7,7 @@ export class MapView {
         this.map = L.map("map").setView([49.118751230612446, 6.174603783729645], 13);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "© OpenStreetMap",
-            noWrap: true
+            noWrap: true,
         }).addTo(this.map);
         this.initMapCenter();
     }
@@ -50,10 +50,12 @@ export class MapView {
         }
         if (recenter) {
             try {
-                this.map.panTo([this.userPosition.latitude, this.userPosition.longitude]);
+                this.map.panTo([
+                    this.userPosition.latitude,
+                    this.userPosition.longitude,
+                ]);
             }
-            catch (e) {
-            }
+            catch (e) { }
         }
     }
     setParkingMarker(parking) {
@@ -82,7 +84,7 @@ export class MapView {
         }).addTo(this.map);
         marker.bindPopup(`<strong>Parking le plus proche</strong><br>${parking.getlib()}`);
     }
-    drawRoute(polyline, currentPos, fitBounds = false) {
+    drawRoute(polyline, currentPos, fitBounds = true) {
         if (!polyline || !Array.isArray(polyline) || polyline.length === 0)
             return;
         const coords = polyline.map((c) => [c[1], c[0]]);
@@ -93,7 +95,11 @@ export class MapView {
             this.map.removeLayer(this.routeLayer);
             this.routeLayer = null;
         }
-        this.routeLayer = L.polyline(coords, { color: 'blue', weight: 4, opacity: 0.8 }).addTo(this.map);
+        this.routeLayer = L.polyline(coords, {
+            color: "blue",
+            weight: 4,
+            opacity: 0.8,
+        }).addTo(this.map);
         if (fitBounds && this.routeLayer && !this.routeLayer.hasFitBounds) {
             this.map.fitBounds(this.routeLayer.getBounds(), { padding: [50, 50] });
             this.routeLayer.hasFitBounds = true;

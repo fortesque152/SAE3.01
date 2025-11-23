@@ -45,9 +45,13 @@ export class MobileApp {
       }, parkings[0]);
 
       for (const p of parkings) {
-        this.map.setParkingMarker(p)
+        if (p !== this.nearestParking) this.map.setParkingMarker(p);
       }
 
+      this.map.setNearestParkingMarker(this.nearestParking);
+
+      console.log("Application prête. Démarrage du suivi GPS en continu...");
+      this.startTracking();
     } catch (err) {
       console.error("Erreur dans start() :", err);
     } finally {
@@ -122,7 +126,10 @@ export class MobileApp {
 
           this.map.setUserMarker(this.userPos);
 
-          const route = await this.itineraryCtrl.getItinerary(this.userPos, this.nearestParking.location);
+          const route = await this.itineraryCtrl.getItinerary(
+            this.userPos,
+            this.nearestParking.location
+          );
           if (route && route.features && route.features[0]?.geometry) {
             const coordinates = route.features[0].geometry.coordinates;
             this.map.drawRoute(coordinates, this.userPos);
@@ -138,10 +145,14 @@ export class MobileApp {
               durationStr = `${hours} h ${minutes} min`;
             }
             const routeInfoEl = document.getElementById("routeInfo");
-            if (routeInfoEl) routeInfoEl.textContent = `${Number(distanceKm)} km • ${durationStr}`;
+            if (routeInfoEl)
+              routeInfoEl.textContent = `${Number(
+                distanceKm
+              )} km • ${durationStr}`;
           } else {
             const routeInfoEl = document.getElementById("routeInfo");
-            if (routeInfoEl) routeInfoEl.textContent = "Itinéraire indisponible";
+            if (routeInfoEl)
+              routeInfoEl.textContent = "Itinéraire indisponible";
           }
         } catch (err) {
           console.error("Erreur dans watchPosition :", err);
