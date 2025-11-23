@@ -1,61 +1,70 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Carte Leaflet</title>
-    <link rel="stylesheet" href="../api/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
 
-  <body>
-    <div id="loaderContainer">
-      <span id="loader"></span>
-      <h4>Chargement en cours...</h4>
-    </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carte Leaflet</title>
+  <link rel="stylesheet" href="../api/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-    <div id="map"></div>
+<body>
+  <div id="loaderContainer">
+    <span id="loader"></span>
+    <h4>Chargement en cours...</h4>
+  </div>
 
-    <div id="routeInfo"></div>
+  <div id="map"></div>
 
-    <button id="routeBtn">Aller au parking le plus proche</button>
+  <div id="routeInfo"></div>
 
-    <script src="../api/leaflet/dist/leaflet.js"></script>
+  <button id="routeBtn">Aller au parking le plus proche</button>
 
-    <script type="module">
-      import { MobileApp } from "../module/MobileApp.js";
+  <script src="../api/leaflet/dist/leaflet.js"></script>
 
-      const app = new MobileApp();
+  <script type="module">
+    import { MobileApp } from "../module/MobileApp.js";
 
-      const routeBtn = document.getElementById("routeBtn");
-      const routeInfo = document.getElementById("routeInfo");
+    const app = new MobileApp();
 
-      const originalShowRoute = app.showRoute.bind(app);
-      app.showRoute = async () => {
-        console.log("showRoute bloqué pour l'instant");
-      };
+    const routeBtn = document.getElementById("routeBtn");
+    const routeInfo = document.getElementById("routeInfo");
 
-      app.start();
+    const originalShowRoute = app.showRoute.bind(app);
+    app.showRoute = async () => {
+      console.log("showRoute bloqué pour l'instant");
+    };
 
-      routeBtn.addEventListener("click", async () => {
-        if (!app.userPos || !app.nearestParking) {
-          alert("position en cour de recuperation");
-          return;
-        }
+    app.start();
 
-        routeBtn.disabled = true;
-        routeBtn.textContent = "Itinéraire affiché";
+    routeBtn.addEventListener("click", async () => {
+      if (!app.userPos || !app.nearestParking) {
+        alert("position en cour de recuperation");
+        return;
+      }
+      // Affiche le parking le plus proche
+      app.map.setNearestParkingMarker(app.nearestParking);
 
-        const result = await originalShowRoute(
-          app.userPos,
-          app.nearestParking.location
-        );
+      // Démarre le suivi GPS et mise à jour du trajet
+      app.startTracking();
 
-        if (result) {
-          routeInfo.textContent = `Distance : ${result.distanceKm} km | Durée : ${result.duration}`;
-          routeInfo.style.display = "block";
-        }
-      });
-    </script>
-  </body>
+      routeBtn.disabled = true;
+      routeBtn.textContent = "Itinéraire affiché";
+
+      const result = await originalShowRoute(
+        app.userPos,
+        app.nearestParking.location
+      );
+
+      if (result) {
+        routeInfo.textContent = `Distance : ${result.distanceKm} km | Durée : ${result.duration}`;
+        routeInfo.style.display = "block";
+      }
+    });
+
+
+  </script>
+</body>
+
 </html>

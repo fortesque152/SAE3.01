@@ -31,12 +31,8 @@ export class MobileApp {
                 return distCurr < distClosest ? curr : closest;
             }, parkings[0]);
             for (const p of parkings) {
-                if (p !== this.nearestParking)
-                    this.map.setParkingMarker(p);
+                this.map.setParkingMarker(p);
             }
-            this.map.setNearestParkingMarker(this.nearestParking);
-            console.log("Application prête. Démarrage du suivi GPS en continu...");
-            this.startTracking();
         }
         catch (err) {
             console.error("Erreur dans start() :", err);
