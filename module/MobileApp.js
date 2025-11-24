@@ -31,12 +31,9 @@ export class MobileApp {
                 return distCurr < distClosest ? curr : closest;
             }, parkings[0]);
             for (const p of parkings) {
-                if (p !== this.nearestParking)
-                    this.map.setParkingMarker(p);
+                this.map.setParkingMarker(p);
             }
-            this.map.setNearestParkingMarker(this.nearestParking);
-            console.log("Application prête. Démarrage du suivi GPS en continu...");
-            this.startTracking();
+            console.log("Application prête. Cliquez sur le bouton pour démarrer le trajet.");
         }
         catch (err) {
             console.error("Erreur dans start() :", err);
@@ -57,35 +54,22 @@ export class MobileApp {
     }
     async showRoute(start, end) {
         const route = await this.itineraryCtrl.getItinerary(start, end);
-        if (!route || !route.features || !route.features[0]?.geometry) {
-            console.error("Itinerary response malformée :", route);
+        if (!route?.features?.[0]?.geometry)
             return null;
-        }
         const coordinates = route.features[0].geometry.coordinates;
-        this.map.drawRoute(coordinates, start);
+        this.map.drawRoute(coordinates, start, false);
         const summary = route.features[0].properties.summary;
         const distanceKm = (summary.distance / 1000).toFixed(1);
-        let durationStr;
-        if (summary.duration < 3600) {
-            const minutes = Math.round(summary.duration / 60);
-            durationStr = `${minutes} min`;
-        }
-        else {
-            const hours = Math.floor(summary.duration / 3600);
-            const minutes = Math.round((summary.duration % 3600) / 60);
-            durationStr = `${hours} h ${minutes} min`;
-        }
+        const durationStr = summary.duration < 3600
+            ? `${Math.round(summary.duration / 60)} min`
+            : `${Math.floor(summary.duration / 3600)} h ${Math.round((summary.duration % 3600) / 60)} min`;
         return { distanceKm: Number(distanceKm), duration: durationStr };
     }
     startTracking() {
-        if (!navigator.geolocation) {
-            console.warn("Géolocalisation non disponible");
+        if (!navigator.geolocation)
             return;
-        }
-        if (!this.nearestParking || !this.nearestParking.location) {
-            console.warn("Parking le plus proche introuvable");
+        if (!this.nearestParking?.location)
             return;
-        }
         if (this.watchId !== null) {
             navigator.geolocation.clearWatch(this.watchId);
             this.watchId = null;
@@ -95,26 +79,19 @@ export class MobileApp {
                 const lat = pos.coords.latitude;
                 const lon = pos.coords.longitude;
                 this.userPos = new GeoLocation(lat, lon);
-                this.map.setUserMarker(this.userPos);
+                this.map.setUserMarker(this.userPos, true);
                 const route = await this.itineraryCtrl.getItinerary(this.userPos, this.nearestParking.location);
-                if (route && route.features && route.features[0]?.geometry) {
-                    const coordinates = route.features[0].geometry.coordinates;
-                    this.map.drawRoute(coordinates, this.userPos);
+                if (route?.features?.[0]?.geometry) {
+                    const coords = route.features[0].geometry.coordinates;
+                    this.map.drawRoute(coords, this.userPos, false);
                     const summary = route.features[0].properties.summary;
                     const distanceKm = (summary.distance / 1000).toFixed(1);
-                    let durationStr;
-                    if (summary.duration < 3600) {
-                        const minutes = Math.round(summary.duration / 60);
-                        durationStr = `${minutes} min`;
-                    }
-                    else {
-                        const hours = Math.floor(summary.duration / 3600);
-                        const minutes = Math.round((summary.duration % 3600) / 60);
-                        durationStr = `${hours} h ${minutes} min`;
-                    }
+                    const durationStr = summary.duration < 3600
+                        ? `${Math.round(summary.duration / 60)} min`
+                        : `${Math.floor(summary.duration / 3600)} h ${Math.round((summary.duration % 3600) / 60)} min`;
                     const routeInfoEl = document.getElementById("routeInfo");
                     if (routeInfoEl)
-                        routeInfoEl.textContent = `${Number(distanceKm)} km • ${durationStr}`;
+                        routeInfoEl.textContent = `Distance : ${Number(distanceKm)} km | Durée : ${durationStr}`;
                 }
                 else {
                     const routeInfoEl = document.getElementById("routeInfo");
@@ -123,10 +100,8 @@ export class MobileApp {
                 }
             }
             catch (err) {
-                console.error("Erreur dans watchPosition :", err);
+                console.error("Erreur watchPosition :", err);
             }
-        }, (err) => {
-            console.error("Erreur watchPosition :", err);
-        }, { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
+        }, (err) => console.error("Erreur watchPosition :", err), { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
     }
 }

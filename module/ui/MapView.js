@@ -4,7 +4,7 @@ export class MapView {
         this.userMarker = null;
         this.userPosition = null;
         this.routeLayer = null;
-        this.map = L.map("map").setView([49.118751230612446, 6.174603783729645], 13);
+        this.map = L.map("map").setView([49.11875, 6.17460], 13);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "© OpenStreetMap",
             noWrap: true,
@@ -36,10 +36,7 @@ export class MapView {
         if (!this.userPosition)
             return;
         if (!this.userMarker) {
-            this.userMarker = L.marker([this.userPosition.latitude, this.userPosition.longitude], {
-                title: "Votre position",
-                icon: userIcon,
-            }).addTo(this.map);
+            this.userMarker = L.marker([this.userPosition.latitude, this.userPosition.longitude], { title: "Votre position", icon: userIcon }).addTo(this.map);
             this.userMarker.bindPopup(`<strong>Votre position</strong><br>`);
         }
         else {
@@ -49,25 +46,14 @@ export class MapView {
             ]);
         }
         if (recenter) {
-            try {
-                this.map.panTo([
-                    this.userPosition.latitude,
-                    this.userPosition.longitude,
-                ]);
-            }
-            catch (e) { }
+            this.centerOnUser(this.userPosition);
         }
     }
     setParkingMarker(parking) {
         const marker = L.marker([parking.location.latitude, parking.location.longitude], {
             title: parking.getlib(),
         }).addTo(this.map);
-        try {
-            marker.bindPopup(`<strong>${parking.getlib()}</strong>`);
-        }
-        catch (e) {
-            console.warn("Impossible de lier la popup du parking", e);
-        }
+        marker.bindPopup(`<strong>${parking.getlib()}</strong>`);
     }
     setNearestParkingMarker(parking) {
         const iconP = L.icon({
@@ -88,21 +74,22 @@ export class MapView {
         if (!polyline || !Array.isArray(polyline) || polyline.length === 0)
             return;
         const coords = polyline.map((c) => [c[1], c[0]]);
-        if (currentPos) {
+        if (currentPos)
             coords.unshift([currentPos.latitude, currentPos.longitude]);
-        }
         if (this.routeLayer) {
             this.map.removeLayer(this.routeLayer);
             this.routeLayer = null;
         }
-        this.routeLayer = L.polyline(coords, {
-            color: "blue",
-            weight: 4,
-            opacity: 0.8,
-        }).addTo(this.map);
+        this.routeLayer = L.polyline(coords, { color: "blue", weight: 4, opacity: 0.8 }).addTo(this.map);
+        // Ne fitBounds que si demandé
         if (fitBounds && this.routeLayer && !this.routeLayer.hasFitBounds) {
             this.map.fitBounds(this.routeLayer.getBounds(), { padding: [50, 50] });
             this.routeLayer.hasFitBounds = true;
+        }
+    }
+    centerOnUser(position) {
+        if (this.map) {
+            this.map.setView([position.latitude, position.longitude], this.map.getZoom());
         }
     }
 }
