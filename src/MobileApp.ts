@@ -34,7 +34,6 @@ export class MobileApp {
       this.map.setUserMarker(userPos);
 
       const parkings = await this.parkCtrl.getParkings();
-
       if (!parkings || parkings.length === 0) {
         console.warn("Aucun parking trouvé");
         return;
@@ -47,11 +46,12 @@ export class MobileApp {
       }, parkings[0]);
 
       for (const p of parkings) {
-        if (p !== this.nearestParking) this.map.setParkingMarker(p);
+        this.map.setParkingMarker(p);
       }
 
       this.map.setNearestParkingMarker(this.nearestParking);
 
+      console.log("Application prête. Cliquez sur le bouton pour démarrer le trajet.");
     } catch (err) {
       console.error("Erreur dans start() :", err);
     } finally {
@@ -74,42 +74,25 @@ export class MobileApp {
 
   async showRoute(start: GeoLocation, end: GeoLocation) {
     const route = await this.itineraryCtrl.getItinerary(start, end);
-
-    if (!route || !route.features || !route.features[0]?.geometry) {
-      console.error("Itinerary response malformée :", route);
-      return null;
-    }
+    if (!route?.features?.[0]?.geometry) return null;
 
     const coordinates = route.features[0].geometry.coordinates;
-    this.map.drawRoute(coordinates, start);
+    this.map.drawRoute(coordinates, start, false);
 
     const summary = route.features[0].properties.summary;
-
     const distanceKm = (summary.distance / 1000).toFixed(1);
-
-    let durationStr: string;
-    if (summary.duration < 3600) {
-      const minutes = Math.round(summary.duration / 60);
-      durationStr = `${minutes} min`;
-    } else {
-      const hours = Math.floor(summary.duration / 3600);
-      const minutes = Math.round((summary.duration % 3600) / 60);
-      durationStr = `${hours} h ${minutes} min`;
-    }
+    const durationStr =
+      summary.duration < 3600
+        ? `${Math.round(summary.duration / 60)} min`
+        : `${Math.floor(summary.duration / 3600)} h ${Math.round((summary.duration % 3600) / 60)} min`;
 
     return { distanceKm: Number(distanceKm), duration: durationStr };
   }
 
-  public startTracking(): void {
-    if (!navigator.geolocation) {
-      console.warn("Géolocalisation non disponible");
-      return;
-    }
 
-    if (!this.nearestParking || !this.nearestParking.location) {
-      console.warn("Parking le plus proche introuvable");
-      return;
-    }
+  public startTracking(): void {
+    if (!navigator.geolocation) return;
+    if (!this.nearestParking?.location) return;
 
     if (this.watchId !== null) {
       navigator.geolocation.clearWatch(this.watchId);
@@ -124,50 +107,35 @@ export class MobileApp {
 
           this.userPos = new GeoLocation(lat, lon);
 
-          this.map.setUserMarker(this.userPos);
+          this.map.setUserMarker(this.userPos, true);
 
-          let shouldRecalc = false;
-          if (!this.lastPos) {
-            shouldRecalc = true;
+          const route = await this.itineraryCtrl.getItinerary(
+            this.userPos,
+            this.nearestParking.location
+          );
+
+          if (route?.features?.[0]?.geometry) {
+            const coords = route.features[0].geometry.coordinates;
+            this.map.drawRoute(coords, this.userPos, false);
+
+            const summary = route.features[0].properties.summary;
+            const distanceKm = (summary.distance / 1000).toFixed(1);
+            const durationStr =
+              summary.duration < 3600
+                ? `${Math.round(summary.duration / 60)} min`
+                : `${Math.floor(summary.duration / 3600)} h ${Math.round((summary.duration % 3600) / 60)} min`;
+
+            const routeInfoEl = document.getElementById("routeInfo");
+            if (routeInfoEl) routeInfoEl.textContent = `Distance : ${Number(distanceKm)} km | Durée : ${durationStr}`;
           } else {
-            const moved = this.getDistance(this.lastPos, this.userPos);
-            if (moved >= this.routeRecalcThresholdMeters) shouldRecalc = true;
-          }
-
-          if (shouldRecalc) {
-            const route = await this.itineraryCtrl.getItinerary(
-              this.userPos,
-              this.nearestParking.location
-            );
-            if (route && route.features && route.features[0]?.geometry) {
-              const coordinates = route.features[0].geometry.coordinates;
-              this.map.drawRoute(coordinates, this.userPos);
-              const summary = route.features[0].properties.summary;
-              const distanceKm = (summary.distance / 1000).toFixed(1);
-              let durationStr: string;
-              if (summary.duration < 3600) {
-                const minutes = Math.round(summary.duration / 60);
-                durationStr = `${minutes} min`;
-              } else {
-                const hours = Math.floor(summary.duration / 3600);
-                const minutes = Math.round((summary.duration % 3600) / 60);
-                durationStr = `${hours} h ${minutes} min`;
-              }
-              const routeInfoEl = document.getElementById("routeInfo");
-              if (routeInfoEl) routeInfoEl.textContent = `${Number(distanceKm)} km • ${durationStr}`;
-              this.lastPos = this.userPos;
-            } else {
-              const routeInfoEl = document.getElementById("routeInfo");
-              if (routeInfoEl) routeInfoEl.textContent = "Itinéraire indisponible";
-            }
+            const routeInfoEl = document.getElementById("routeInfo");
+            if (routeInfoEl) routeInfoEl.textContent = "Itinéraire indisponible";
           }
         } catch (err) {
-          console.error("Erreur dans watchPosition :", err);
+          console.error("Erreur watchPosition :", err);
         }
       },
-      (err) => {
-        console.error("Erreur watchPosition :", err);
-      },
+      (err) => console.error("Erreur watchPosition :", err),
       { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
     );
   }

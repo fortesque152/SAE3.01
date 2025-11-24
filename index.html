@@ -31,28 +31,26 @@
     const routeBtn = document.getElementById("routeBtn");
     const routeInfo = document.getElementById("routeInfo");
 
-    const originalShowRoute = app.showRoute.bind(app);
-    app.showRoute = async () => {
-      console.log("showRoute bloqué pour l'instant");
-    };
 
     app.start();
 
     routeBtn.addEventListener("click", async () => {
       if (!app.userPos || !app.nearestParking) {
-        alert("position en cour de recuperation");
+        alert("position en cours de récupération");
         return;
       }
-      // Affiche le parking le plus proche
+
+
       app.map.setNearestParkingMarker(app.nearestParking);
 
-      // Démarre le suivi GPS et mise à jour du trajet
+
       app.startTracking();
 
       routeBtn.disabled = true;
       routeBtn.textContent = "Itinéraire affiché";
 
-      const result = await originalShowRoute(
+
+      const result = await app.showRoute(
         app.userPos,
         app.nearestParking.location
       );
@@ -61,8 +59,9 @@
         routeInfo.textContent = `Distance : ${result.distanceKm} km | Durée : ${result.duration}`;
         routeInfo.style.display = "block";
       }
-    });
 
+      
+    });
 
   </script>
 </body>
