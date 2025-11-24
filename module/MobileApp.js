@@ -9,6 +9,8 @@ export class MobileApp {
         this.userPos = null;
         this.nearestParking = null;
         this.watchId = null;
+        this.lastPos = null;
+        this.routeRecalcThresholdMeters = 5;
         this.map = new MapView();
         this.locCtrl = new LocationController();
         this.parkCtrl = new ParkingController();
@@ -35,8 +37,7 @@ export class MobileApp {
                     this.map.setParkingMarker(p);
             }
             this.map.setNearestParkingMarker(this.nearestParking);
-            console.log("Application prête. Démarrage du suivi GPS en continu...");
-            this.startTracking();
+            // Ne pas démarrer automatiquement le suivi GPS ; attendre l'action de l'utilisateur
         }
         catch (err) {
             console.error("Erreur dans start() :", err);
@@ -96,30 +97,42 @@ export class MobileApp {
                 const lon = pos.coords.longitude;
                 this.userPos = new GeoLocation(lat, lon);
                 this.map.setUserMarker(this.userPos);
-                const route = await this.itineraryCtrl.getItinerary(this.userPos, this.nearestParking.location);
-                if (route && route.features && route.features[0]?.geometry) {
-                    const coordinates = route.features[0].geometry.coordinates;
-                    this.map.drawRoute(coordinates, this.userPos);
-                    const summary = route.features[0].properties.summary;
-                    const distanceKm = (summary.distance / 1000).toFixed(1);
-                    let durationStr;
-                    if (summary.duration < 3600) {
-                        const minutes = Math.round(summary.duration / 60);
-                        durationStr = `${minutes} min`;
-                    }
-                    else {
-                        const hours = Math.floor(summary.duration / 3600);
-                        const minutes = Math.round((summary.duration % 3600) / 60);
-                        durationStr = `${hours} h ${minutes} min`;
-                    }
-                    const routeInfoEl = document.getElementById("routeInfo");
-                    if (routeInfoEl)
-                        routeInfoEl.textContent = `${Number(distanceKm)} km • ${durationStr}`;
+                let shouldRecalc = false;
+                if (!this.lastPos) {
+                    shouldRecalc = true;
                 }
                 else {
-                    const routeInfoEl = document.getElementById("routeInfo");
-                    if (routeInfoEl)
-                        routeInfoEl.textContent = "Itinéraire indisponible";
+                    const moved = this.getDistance(this.lastPos, this.userPos);
+                    if (moved >= this.routeRecalcThresholdMeters)
+                        shouldRecalc = true;
+                }
+                if (shouldRecalc) {
+                    const route = await this.itineraryCtrl.getItinerary(this.userPos, this.nearestParking.location);
+                    if (route && route.features && route.features[0]?.geometry) {
+                        const coordinates = route.features[0].geometry.coordinates;
+                        this.map.drawRoute(coordinates, this.userPos);
+                        const summary = route.features[0].properties.summary;
+                        const distanceKm = (summary.distance / 1000).toFixed(1);
+                        let durationStr;
+                        if (summary.duration < 3600) {
+                            const minutes = Math.round(summary.duration / 60);
+                            durationStr = `${minutes} min`;
+                        }
+                        else {
+                            const hours = Math.floor(summary.duration / 3600);
+                            const minutes = Math.round((summary.duration % 3600) / 60);
+                            durationStr = `${hours} h ${minutes} min`;
+                        }
+                        const routeInfoEl = document.getElementById("routeInfo");
+                        if (routeInfoEl)
+                            routeInfoEl.textContent = `${Number(distanceKm)} km • ${durationStr}`;
+                        this.lastPos = this.userPos;
+                    }
+                    else {
+                        const routeInfoEl = document.getElementById("routeInfo");
+                        if (routeInfoEl)
+                            routeInfoEl.textContent = "Itinéraire indisponible";
+                    }
                 }
             }
             catch (err) {
