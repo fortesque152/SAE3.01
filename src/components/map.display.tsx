@@ -10,7 +10,7 @@ function MapDisplay() {
   const mapContainerRef = useRef();
 
   useEffect(() => {
-    mapboxgl.accessToken = import.meta.env.VITE_API_TOKEN;
+    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
       center: [6.17538, 49.11994],
