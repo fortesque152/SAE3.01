@@ -1,0 +1,119 @@
+.navbar {
+  position: absolute;
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
+  z-index: 1000;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.navButton {
+  padding: 0.75rem 1.25rem;
+  background-color: var(--color-white);
+  color: var(--color-black);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all var(--transition-base) cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  letter-spacing: -0.01em;
+}
+
+.navButton:hover {
+  background-color: var(--color-gray-50);
+  border-color: var(--color-black);
+}
+
+.navButtonActive {
+  padding: 0.75rem 1.25rem;
+  background-color: var(--color-black);
+  color: var(--color-white);
+  border: 1px solid var(--color-black);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all var(--transition-base) cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  letter-spacing: -0.01em;
+}
+
+.userBadge {
+  background-color: var(--color-white);
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gray-200);
+  box-shadow: var(--shadow-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-black);
+}
+
+.logoutButton {
+  padding: 0.75rem 1.25rem;
+  background-color: var(--color-white);
+  color: var(--color-black);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all var(--transition-base) cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+}
+
+.logoutButton:hover {
+  background-color: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 768px) {
+  .navbar {
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+  }
+
+  .navButton,
+  .navButtonActive,
+  .userBadge,
+  .logoutButton {
+    padding: 0.625rem var(--spacing-md);
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    top: 0.75rem;
+    right: 0.75rem;
+    left: 0.75rem;
+    gap: var(--spacing-sm);
+  }
+
+  .navButton,
+  .navButtonActive,
+  .logoutButton {
+    flex: 1;
+    text-align: center;
+  }
+
+  .userBadge {
+    width: 100%;
+    text-align: center;
+  }
+}
