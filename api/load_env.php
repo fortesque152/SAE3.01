@@ -1,7 +1,4 @@
 <?php
-/**
- * Charge les variables d'environnement depuis le fichier .env
- */
 function loadEnv($path)
 {
     if (!file_exists($path)) {
