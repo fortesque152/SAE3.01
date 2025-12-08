@@ -70,7 +70,7 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
       <div className={styles.card}>
         <div className={styles.header}>
           <div className={styles.logoContainer}>
-            <img src="../public/asset/images/Logo.svg" alt="" />
+            <img src="../asset/images/Logo.svg" alt="" />
           </div>
           <h2 className={styles.title}>
             {isLogin ? "Connexion" : "Inscription"}

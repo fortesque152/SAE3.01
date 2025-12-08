@@ -2,15 +2,20 @@ import { useEffect, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import { parkingService } from "../services/parkingService";
 import type { Parking } from "../types/Parking";
+import Navigation from "./Navigation";
 import "../App.css";
 
 interface ParkingMarkerProps {
   map: mapboxgl.Map | null;
+  userLocation: [number, number] | null;
 }
 
-function ParkingMarker({ map }: ParkingMarkerProps) {
+function ParkingMarker({ map, userLocation }: ParkingMarkerProps) {
   const [parkings, setParkings] = useState<Parking[]>([]);
   const [markers, setMarkers] = useState<mapboxgl.Marker[]>([]);
+  const [selectedDestination, setSelectedDestination] = useState<
+    [number, number] | null
+  >(null);
 
   useEffect(() => {
     parkingService
@@ -35,9 +40,9 @@ function ParkingMarker({ map }: ParkingMarkerProps) {
       const availabilityPercent =
         (parking.availableSpots / parking.capacity) * 100;
       const availabilityClass =
-        availabilityPercent > 50
+        availabilityPercent > 5
           ? "availability-high"
-          : availabilityPercent > 20
+          : availabilityPercent > 2
           ? "availability-medium"
           : "availability-low";
 
@@ -51,6 +56,7 @@ function ParkingMarker({ map }: ParkingMarkerProps) {
               <span class="stat-label">Places disponibles</span>
               <span class="stat-value">${parking.availableSpots} / ${parking.capacity}</span>
             </div>
+            <button class="go-btn">M'y rendre</button>
           </div>
           
       `;

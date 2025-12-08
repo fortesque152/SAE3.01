@@ -2,11 +2,12 @@
   min-height: 100vh;
   background-color: var(--color-gray-50);
   padding: 6rem var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
+  animation: fadeIn 0.4s ease-out;
+  margin-top: var(--spacing-xl);
 }
 
 .header {
   margin-bottom: var(--spacing-2xl);
-  animation: fadeIn 0.4s ease-out;
 }
 
 .title {
