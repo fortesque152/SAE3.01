@@ -1,69 +1,50 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Carte Leaflet</title>
-  <link rel="stylesheet" href="../api/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion</title>
+      <link rel="icon"  href="./style/Logo.png" />
+    <link rel="stylesheet" href="./vue/style/connexion.css">
 </head>
-
 <body>
-  <div id="loaderContainer">
-    <span id="loader"></span>
-    <h4>Chargement en cours...</h4>
-  </div>
+    <div class="container">
+        <form class="login-form">
+            <h2>Connexion</h2>
+            <div class="input-group">
+                <label for="username">Nom d'utilisateur</label>
+                <input type="text" id="username" name="username" placeholder="Entrez votre nom d'utilisateur" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" placeholder="Entrez votre mot de passe" required>
+            </div>
+            <button type="submit">Se connecter</button>
+            <p class="message">Pas de compte ? <a href="./vue/inscription.html">Inscrivez-vous</a></p>
+        </form>
+    </div>
+</body>
+</html>
+<script>
+const form = document.querySelector(".login-form");
 
-  <div id="map"></div>
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  <div id="routeInfo"></div>
+    const username = form.username.value;
+    const password = form.password.value;
 
-  <button id="routeBtn">Aller au parking le plus proche</button>
-
-  <script src="../api/leaflet/dist/leaflet.js"></script>
-
-  <script type="module">
-    import { MobileApp } from "../module/MobileApp.js";
-
-    const app = new MobileApp();
-
-    const routeBtn = document.getElementById("routeBtn");
-    const routeInfo = document.getElementById("routeInfo");
-
-
-    app.start();
-
-    routeBtn.addEventListener("click", async () => {
-      if (!app.userPos || !app.nearestParking) {
-        alert("position en cours de récupération");
-        return;
-      }
-
-
-      app.map.setNearestParkingMarker(app.nearestParking);
-
-
-      app.startTracking();
-
-      routeBtn.disabled = true;
-      routeBtn.textContent = "Itinéraire affiché";
-
-
-      const result = await app.showRoute(
-        app.userPos,
-        app.nearestParking.location
-      );
-
-      if (result) {
-        routeInfo.textContent = `Distance : ${result.distanceKm} km | Durée : ${result.duration}`;
-        routeInfo.style.display = "block";
-      }
-
-      
+    const res = await fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
     });
 
-  </script>
-</body>
+    const data = await res.json();
+    alert(data.message);
 
-</html>
+    if (data.success) {
+        window.location.href = "dashboard.html"; // Page après connexion
+    }
+});
+</script>

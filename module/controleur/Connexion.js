@@ -5,7 +5,7 @@ export class Connexion {
             hostname: "devbdd.iutmetz.univ-lorraine.fr",
             username: "e27844u_appli",
             password: "32406845",
-            db: "e27844u_laroche5_r304",
+            db: "e27844u_SAE_bd",
         });
         return c;
     }

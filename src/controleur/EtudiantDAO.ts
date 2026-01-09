@@ -1,80 +1,81 @@
-import { IDAO } from "./DAO.js";
+/*import { IDAO } from "./DAO.js";
 import { Connexion } from "./Connexion.js";
+import { UserProfile } from "../modele/UserProfile.js";
 
 
-export class EtudiantDAO implements IDAO<Etudiant> {
+export class UserProfileDAO implements IDAO<UserProfile> {
 
-    async getAll(): Promise<Etudiant[]> {
-        const liste: Etudiant[] = [];
+    async getAll(): Promise<UserProfile[]> {
+        const liste: UserProfile[] = [];
         const laConnexion = await Connexion.getConnection();
         const lignes = await laConnexion.query(
-            "SELECT * FROM etudiant ORDER BY id"
+            "SELECT * FROM UserProfile ORDER BY id"
             ,
         );
         for (const ligne of lignes) {
-            const p = new Etudiant(ligne.nom,ligne.prenom,ligne.id_promotion);
+            const p = new UserProfile(ligne.nom,ligne.prenom,ligne.id_promotion);
             liste.push(p);
         }
         laConnexion.close();
         return liste;
     }
 
-    async getById(id: number): Promise<Etudiant | null> {
-        let p: Etudiant | null = null;
+    async getById(id: number): Promise<UserProfile | null> {
+        let p: UserProfile | null = null;
         const laConnexion = await Connexion.getConnection();
         const lignes = await laConnexion.query(
-            "SELECT * FROM etudiant WHERE id = ?"
+            "SELECT * FROM UserProfile WHERE id = ?"
             ,
             [id],
         );
         if (lignes.length === 1) {
             const ligne = lignes[0];
-            p = new Etudiant(ligne.nom,ligne.prenom,ligne.id_promotion);
+            p = new UserProfile(ligne.nom,ligne.prenom,ligne.id_promotion);
             p.id = ligne.id;
         }
         laConnexion.close();
         return p;
     }
 
-    async getByPromotion(id: number): Promise<Etudiant | null> {
-        let p: Etudiant | null = null;
+    async getByPromotion(id: number): Promise<UserProfile | null> {
+        let p: UserProfile | null = null;
         const laConnexion = await Connexion.getConnection();
         const lignes = await laConnexion.query(
-            "SELECT * FROM etudiant WHERE id_promotion = ?"
+            "SELECT * FROM UserProfile WHERE id_promotion = ?"
             ,
             [id],
         );
         if (lignes.length === 1) {
             const ligne = lignes[0];
-            p = new Etudiant(ligne.nom,ligne.prenom,ligne.id_promotion);
+            p = new UserProfile(ligne.nom,ligne.prenom,ligne.id_promotion);
             p.id = ligne.id;
         }
         laConnexion.close();
         return p;
     }
 
-    async getByNomPrenom(nom: string,prenom: string): Promise<Etudiant | null> {
-        let p: Etudiant | null = null;
+    async getByNomPrenom(nom: string,prenom: string): Promise<UserProfile | null> {
+        let p: UserProfile | null = null;
         const laConnexion = await Connexion.getConnection();
         const lignes = await laConnexion.query(
-            "SELECT * FROM etudiant WHERE nom LIKE ? AND prenom LIKE ? "
+            "SELECT * FROM UserProfile WHERE nom LIKE ? AND prenom LIKE ? "
             ,
             [nom,prenom],
         );
         if (lignes.length === 1) {
             const ligne = lignes[0];
-            p = new Etudiant(ligne.nom,ligne.prenom,ligne.id_promotion);
+            p = new UserProfile(ligne.nom,ligne.prenom,ligne.id_promotion);
             p.id = ligne.id;
         }
         laConnexion.close();
         return p;
     }
 
-    async create(objet: Etudiant): Promise<boolean> {
+    async create(objet: UserProfile): Promise<boolean> {
         let ok = true;
         const laConnexion = await Connexion.getConnection();
         const resultat = await laConnexion.query(
-            "INSERT INTO etudiant (nom,prenom,id_promotion) values (?,?,?)"
+            "INSERT INTO UserProfile (nom,prenom,id_promotion) values (?,?,?)"
             ,
             [objet.nom,objet.prenom,objet.idPromotion],
         );
@@ -87,11 +88,11 @@ export class EtudiantDAO implements IDAO<Etudiant> {
         return ok;
     }
 
-    async update(objet: Etudiant): Promise<boolean> {
+    async update(objet: UserProfile): Promise<boolean> {
         let ok = true;
         const laConnexion = await Connexion.getConnection();
         const resultat = await laConnexion.query(
-            "UPDATE etudiant SET nom = ?, prenom = ?, id_promotion = ? WHERE id = ?"
+            "UPDATE UserProfile SET nom = ?, prenom = ?, id_promotion = ? WHERE id = ?"
             ,
             [objet.nom,objet.prenom,objet.idPromotion,objet.id],
         );
@@ -104,11 +105,11 @@ export class EtudiantDAO implements IDAO<Etudiant> {
         return ok;
     }
 
-    async delete(objet: Etudiant): Promise<boolean> {
+    async delete(objet: UserProfile): Promise<boolean> {
         let ok = true;
         const laConnexion = await Connexion.getConnection();
         const resultat = await laConnexion.query(
-            "DELETE FROM etudiant WHERE id = ?"
+            "DELETE FROM UserProfile WHERE id = ?"
             ,
             [objet.id],
         );
@@ -121,3 +122,4 @@ export class EtudiantDAO implements IDAO<Etudiant> {
         return ok;
     }
 }
+    */
