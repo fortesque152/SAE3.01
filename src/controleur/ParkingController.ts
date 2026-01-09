@@ -5,7 +5,7 @@ import { UserProfile } from "../modele/UserProfile.js";
 export class ParkingController {
 
     private urlMetz = "https://maps.eurometropolemetz.eu/public/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=public:pub_tsp_sta&srsName=EPSG:4326&outputFormat=application/json&cql_lter=id%20is%20not%20null";
-    private urlLondres = "../../api/Londre/Parking_Bays_20260109.geojson"
+    private urlLondres = "./api/Londre/Parking_Bays_20260109.geojson"
     async getParkings(user: UserProfile): Promise<Parking[]> {
         const parkings: Parking[] = [];
 

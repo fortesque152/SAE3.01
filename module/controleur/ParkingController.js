@@ -3,7 +3,7 @@ import { GeoLocation } from "../modele/GeoLocation.js";
 export class ParkingController {
     constructor() {
         this.urlMetz = "https://maps.eurometropolemetz.eu/public/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=public:pub_tsp_sta&srsName=EPSG:4326&outputFormat=application/json&cql_lter=id%20is%20not%20null";
-        this.urlLondres = "../../api/Londre/Parking_Bays_20260109.geojson";
+        this.urlLondres = "./api/Londre/Parking_Bays_20260109.geojson";
     }
     async getParkings(user) {
         const parkings = [];
