@@ -14,7 +14,7 @@ session_start();
 </head>
 <body>
 <div class="container">
-    <form class="login-form" method="POST" action="connexion.view.php">
+    <form class="login-form" method="POST" action="./vue/connexion.view.php">
         <h2>Connexion</h2>
         <div class="input-group">
             <label for="username">Nom d'utilisateur</label>

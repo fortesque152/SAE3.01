@@ -28,7 +28,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     }
 
     // Vérifier si l'utilisateur existe déjà
-    $stmt = $pdo->prepare("SELECT * FROM utilisateurs WHERE username = :username OR email = :email");
+    $stmt = $pdo->prepare("SELECT * FROM user WHERE username = :username OR email = :email");
     $stmt->execute([
         ':username' => $username,
         ':email' => $email
@@ -41,7 +41,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     }
 
     // Insérer le nouvel utilisateur
-    $stmt = $pdo->prepare("INSERT INTO utilisateurs (username, email, password) VALUES (:username, :email, :password)");
+    $stmt = $pdo->prepare("INSERT INTO user (username, email, password) VALUES (:username, :email, :password)");
     $stmt->execute([
         ':username' => $username,
         ':email' => $email,

@@ -33,7 +33,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     if($user){
         // Connexion réussie
         $_SESSION['username'] = $user['username'];
-        header("Location: dashboard.php"); // redirection vers ton tableau de bord
+        header("Location: Application.html"); // redirection vers ton tableau de bord
         exit();
     } else {
         // Échec
