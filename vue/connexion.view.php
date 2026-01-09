@@ -33,12 +33,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     if($user){
         // Connexion réussie
         $_SESSION['username'] = $user['username'];
-        header("Location: Application.html"); // redirection vers ton tableau de bord
+        header("Location: ../Application.html"); // redirection vers ton tableau de bord
         exit();
     } else {
         // Échec
         $error = "Nom d'utilisateur ou mot de passe incorrect";
-        header("Location: connexion.php?error=" . urlencode($error));
+        header("Location: ../index.php?error=" . urlencode($error));
         exit();
     }
 } else {
