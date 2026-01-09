@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
 session_start();
 ?>
 
@@ -8,11 +10,11 @@ session_start();
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Connexion</title>
-<link rel="stylesheet" href="./style/connexion.css">
+<link rel="stylesheet" href="./vue/style/connexion.css">
 </head>
 <body>
 <div class="container">
-    <form class="login-form" method="POST" action="connexion_functions.php">
+    <form class="login-form" method="POST" action="connexion.view.php">
         <h2>Connexion</h2>
         <div class="input-group">
             <label for="username">Nom d'utilisateur</label>
@@ -24,7 +26,7 @@ session_start();
         </div>
         <button type="submit">Se connecter</button>
         <p class="message">
-            Pas de compte ? <a href="inscription.php">Inscrivez-vous</a>
+            Pas de compte ? <a href="./vue/inscription.php">Inscrivez-vous</a>
         </p>
     </form>
 </div>

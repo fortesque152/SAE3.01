@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
 session_start();
 ?>
 
@@ -12,7 +14,7 @@ session_start();
 </head>
 <body>
 <div class="container">
-    <form class="register-form" method="POST" action="inscription_functions.php">
+    <form class="register-form" method="POST" action="inscription.view.php">
         <h2>Créer un compte</h2>
         <div class="input-group">
             <label for="username">Nom d'utilisateur</label>
@@ -31,7 +33,7 @@ session_start();
             <input type="password" id="confirm-password" name="confirm-password" required>
         </div>
         <button type="submit">S'inscrire</button>
-        <p class="message">Déjà un compte ? <a href="connexion.php">Connectez-vous</a></p>
+        <p class="message">Déjà un compte ? <a href="../index.php">Connectez-vous</a></p>
     </form>
 </div>
 </body>

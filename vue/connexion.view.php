@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
 session_start();
 
 // Connexion à la base
@@ -20,7 +22,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $password = $_POST['password'] ?? '';
 
     // Préparer la requête pour éviter les injections SQL
-    $stmt = $pdo->prepare("SELECT * FROM utilisateurs WHERE username = :username AND password = :password");
+    $stmt = $pdo->prepare("SELECT * FROM user WHERE username = :username AND password = :password");
     $stmt->execute([
         ':username' => $username,
         ':password' => $password
