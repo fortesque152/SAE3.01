@@ -1,7 +1,5 @@
 //commande pour lancer le serv http-server -c-1 
 
-
-
 {
   "compilerOptions": {
     "target": "ES2020",

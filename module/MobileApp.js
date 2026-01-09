@@ -3,7 +3,9 @@ import { ParkingController } from "./controleur/ParkingController.js";
 import { ItineraryController } from "./controleur/ItineraryController.js";
 import { MapView } from "./ui/MapView.js";
 import { GeoLocation } from "./modele/GeoLocation.js";
+import { UserProfile } from "./modele/UserProfile.js";
 const loader = document.getElementById("loaderContainer");
+const user = new UserProfile("Corona", "Nikola", "bike");
 export class MobileApp {
     constructor() {
         this.userPos = null;
@@ -22,7 +24,7 @@ export class MobileApp {
             const userPos = await this.locCtrl.getUserLocation();
             this.userPos = userPos;
             this.map.setUserMarker(userPos);
-            const parkings = await this.parkCtrl.getParkings();
+            const parkings = await this.parkCtrl.getParkings(user);
             if (!parkings || parkings.length === 0) {
                 console.warn("Aucun parking trouvé");
                 return;
@@ -35,7 +37,6 @@ export class MobileApp {
             for (const p of parkings) {
                 this.map.setParkingMarker(p);
             }
-            this.map.setNearestParkingMarker(this.nearestParking);
             console.log("Application prête. Cliquez sur le bouton pour démarrer le trajet.");
         }
         catch (err) {
