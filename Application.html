@@ -5,9 +5,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Parking-SAE</title>
-  <link rel="icon"  href="./style/Logo.png" />
-  <link rel="stylesheet" href="../api/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="./style/style.css" />
+  <link rel="icon"  href="./vue/style/Logo.png" />
+  <link rel="stylesheet" href="./api/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="./vue/style/style.css" />
 </head>
 
 <body>
@@ -22,10 +22,10 @@
 
   <button id="routeBtn">Aller au parking le plus proche</button>
 
-  <script src="../api/leaflet/dist/leaflet.js"></script>
+  <script src="./api/leaflet/dist/leaflet.js"></script>
 
   <script type="module">
-    import { MobileApp } from "../module/MobileApp.js";
+    import { MobileApp } from "./module/MobileApp.js";
 
     const app = new MobileApp();
 
