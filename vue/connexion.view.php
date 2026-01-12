@@ -27,7 +27,7 @@ $stmt->execute([$email]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user || !password_verify($password, $user["password_hash"])) {
-    header("Location: ../index.phpp?error=login");
+    header("Location: ../index.php?error=login");
     exit();
 }
 
@@ -42,5 +42,5 @@ $_SESSION["account_id"] = $user["account_id"];
 $_SESSION["profile_id"] = $user["profile_id"];
 $_SESSION["profile_name"] = $user["profile_name"];
 
-header("Location: ../application.html");
+header("Location: ../Application.html");
 exit();
