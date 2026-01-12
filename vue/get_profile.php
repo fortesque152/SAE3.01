@@ -1,52 +1,57 @@
 <?php
 session_start();
-require_once "db.php";
+require_once "db.php"; // ton fichier de connexion PDO
 
-if (!isset($_SESSION["profile_id"])) {
+header("Content-Type: application/json");
+
+if(!isset($_SESSION['account_id'])) {
     echo json_encode(["connected" => false]);
     exit();
 }
 
-$profileId = $_SESSION["profile_id"];
+$accountId = $_SESSION['account_id'];
 
-/* Infos profil */
+// Récupérer profil par défaut
 $stmt = $pdo->prepare("
-    SELECT 
-        profile_id,
-        profile_name,
-        is_pmr,
-        avatar_color
+    SELECT profile_id, profile_name AS name, vehicle_type_id
     FROM profile
-    WHERE profile_id = ?
+    LEFT JOIN profile_vehicle_type USING(profile_id)
+    WHERE account_id = ? AND is_default = TRUE
 ");
-$stmt->execute([$profileId]);
+$stmt->execute([$accountId]);
 $profile = $stmt->fetch(PDO::FETCH_ASSOC);
 
-/* Types de véhicules */
-$stmt = $pdo->prepare("
-    SELECT vt.vehicle_type_id, vt.name
-    FROM vehicle_type vt
-    JOIN profile_vehicle_type pvt 
-        ON pvt.vehicle_type_id = vt.vehicle_type_id
-    WHERE pvt.profile_id = ?
-");
-$stmt->execute([$profileId]);
-$vehicles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+if(!$profile){
+    echo json_encode(["connected" => false]);
+    exit();
+}
 
-/* Préférences */
-$stmt = $pdo->prepare("
-    SELECT pt.key, pp.value
-    FROM profile_preference pp
-    JOIN preference_type pt 
-        ON pt.preference_type_id = pp.preference_type_id
-    WHERE pp.profile_id = ?
+// Récupérer type de véhicule
+$vehicleType = null;
+if($profile['vehicle_type_id']){
+    $vstmt = $pdo->prepare("SELECT name FROM vehicle_type WHERE vehicle_type_id = ?");
+    $vstmt->execute([$profile['vehicle_type_id']]);
+    $vehicle = $vstmt->fetch(PDO::FETCH_ASSOC);
+    $vehicleType = $vehicle['name'] ?? null;
+}
+
+// Récupérer parkings favoris
+$favStmt = $pdo->prepare("
+    SELECT f.parking_id, p.name, p.latitude, p.longitude
+    FROM favorite f
+    JOIN parking p ON f.parking_id = p.parking_id
+    WHERE f.profile_id = ?
 ");
-$stmt->execute([$profileId]);
-$preferences = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$favStmt->execute([$profile['profile_id']]);
+$favorites = $favStmt->fetchAll(PDO::FETCH_ASSOC);
 
 echo json_encode([
     "connected" => true,
-    "profile" => $profile,
-    "vehicles" => $vehicles,
-    "preferences" => $preferences
+    "profile" => [
+        "id" => $profile['profile_id'],
+        "name" => $profile['name'],
+        "vehicleType" => $vehicleType,
+        "preferences" => [] // tu peux compléter si tu veux récupérer preferences
+    ],
+    "favorites" => $favorites
 ]);
