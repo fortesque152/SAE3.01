@@ -1,6 +1,6 @@
 export interface VehicleType {
-  vehicle_type_id: number;
-  name: "car" | "electric" | "motorcycle" | "bike";
+  vehicle_name: string;
+  name: "car" | "electric" | "motorcycle";
 }
 
 export interface Preference {
@@ -30,7 +30,7 @@ export class UserProfile {
     this._isPMR = profile.is_pmr;
     this._vehicles = profile.vehicles || [];
     this._preferences = profile.preferences || [];
-    if(this._vehicles.length > 0) this._currentVehicle = this._vehicles[0];
+    if (this._vehicles.length > 0) this._currentVehicle = this._vehicles[0];
   }
 
   getProfileId() { return this._profileId; }
@@ -42,39 +42,54 @@ export class UserProfile {
 
   setCurrentVehicle(vehicleName: VehicleType["name"]) {
     const v = this._vehicles.find(v => v.name === vehicleName);
-    if(v) this._currentVehicle = v;
+    if (v) this._currentVehicle = v;
   }
 
-  async addVehicle(name: VehicleType["name"]) {
-    const resp = await fetch("./vue/add_vehicle.php", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ vehicleType: name })
-    });
-    const result = await resp.json();
-    if(result.success && result.vehicle) {
-      const newVehicle: VehicleType = {
-        vehicle_type_id: Number(result.vehicle.vehicle_id),
-        name: result.vehicle.name
-      };
-      this._vehicles.push(newVehicle);
-      this._currentVehicle = newVehicle;
-    } else {
-      alert("Impossible d'ajouter le véhicule");
+  addVehicle(vehicule: VehicleType) {
+    this._vehicles.push(vehicule);
+    this._currentVehicle = vehicule;
+  }
+
+  async fetchVehicles(): Promise<VehicleType[]> {
+    try {
+      const res = await fetch("./vue/get_vehicule.php", { credentials: "include" });
+      const data = await res.json();
+
+      if (!data.success) return [];
+
+      const tab: VehicleType[] = [];
+
+      for (const v of data.vehicles) {
+        tab.push({
+          vehicle_name: v.name,
+          name: v.type
+        });
+      }
+      return tab;
+
+    } catch (err) {
+      console.error("Erreur récupération véhicules :", err);
+      return [];
     }
   }
+
+
+  async reloadVehicles(): Promise<void> {
+    this._vehicles = await this.fetchVehicles();
+    this._currentVehicle = this._vehicles.length > 0 ? this._vehicles[0] : null;
+  }
+
 
   canPark(properties: any): boolean {
     const restriction = (properties.restriction_type || "").toLowerCase();
     const validPermits = (properties.valid_parking_permits || "").toLowerCase();
     const spaces = parseInt(properties.parking_spaces) || 0;
-    if(spaces < 1) return false;
-    if(!this._currentVehicle) return false;
+    if (spaces < 1) return false;
+    if (!this._currentVehicle) return false;
 
-    if(!restriction.includes(this._currentVehicle.name)) return false;
-    if(restriction.includes("pmr") && !this._isPMR) return false;
-    if(validPermits && validPermits !== "n/a") return false;
+    if (!restriction.includes(this._currentVehicle.name)) return false;
+    if (restriction.includes("pmr") && !this._isPMR) return false;
+    if (validPermits && validPermits !== "n/a") return false;
 
     return true;
   }
