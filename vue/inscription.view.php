@@ -1,57 +1,55 @@
 <?php
 session_start();
+require_once "db.php";
 
-// Connexion à la base
-$host = "devbdd.iutmetz.univ-lorraine.fr";
-$db   = "e27844u_SAE_bd";
-$user = "e27844u_appli";
-$pass = "32406845";
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch(PDOException $e) {
-    die("Erreur de connexion : " . $e->getMessage());
-}
-
-// Vérification du formulaire
-if($_SERVER['REQUEST_METHOD'] === 'POST'){
-    $username = $_POST['username'] ?? '';
-    $email = $_POST['email'] ?? '';
-    $password = $_POST['password'] ?? '';
-    $confirm = $_POST['confirm-password'] ?? '';
-
-    if($password !== $confirm){
-        $error = "Les mots de passe ne correspondent pas";
-        header("Location: inscription.php?error=" . urlencode($error));
-        exit();
-    }
-
-    // Vérifier si l'utilisateur existe déjà
-    $stmt = $pdo->prepare("SELECT * FROM user WHERE username = :username OR email = :email");
-    $stmt->execute([
-        ':username' => $username,
-        ':email' => $email
-    ]);
-
-    if($stmt->fetch()){
-        $error = "Nom d'utilisateur ou email déjà utilisé";
-        header("Location: inscription.php?error=" . urlencode($error));
-        exit();
-    }
-
-    // Insérer le nouvel utilisateur
-    $stmt = $pdo->prepare("INSERT INTO user (username, email, password) VALUES (:username, :email, :password)");
-    $stmt->execute([
-        ':username' => $username,
-        ':email' => $email,
-        ':password' => $password // Pour plus de sécurité, on peut hasher avec password_hash()
-    ]);
-
-    $_SESSION['username'] = $username;
-    header("Location: ../index.php");
-    exit();
-} else {
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     header("Location: inscription.php");
     exit();
 }
+
+$email = $_POST["email"] ?? "";
+$password = $_POST["password"] ?? "";
+$confirm = $_POST["confirm-password"] ?? "";
+$username = $_POST["username"] ?? "";
+
+if ($password !== $confirm) {
+    header("Location: inscription.php?error=password");
+    exit();
+}
+
+/* Vérifier si l'email existe déjà */
+$stmt = $pdo->prepare("SELECT account_id FROM account WHERE email = ?");
+$stmt->execute([$email]);
+
+if ($stmt->fetch()) {
+    header("Location: inscription.php?error=email");
+    exit();
+}
+
+/* Création du compte */
+$passwordHash = password_hash($password, PASSWORD_DEFAULT);
+
+$stmt = $pdo->prepare("
+    INSERT INTO account (email, password_hash)
+    VALUES (?, ?)
+");
+$stmt->execute([$email, $passwordHash]);
+
+$accountId = $pdo->lastInsertId();
+
+/* Création du profil par défaut */
+$stmt = $pdo->prepare("
+    INSERT INTO profile (account_id, profile_name, is_default)
+    VALUES (?, ?, TRUE)
+");
+$stmt->execute([$accountId, $username]);
+
+$profileId = $pdo->lastInsertId();
+
+/* Session */
+$_SESSION["account_id"] = $accountId;
+$_SESSION["profile_id"] = $profileId;
+$_SESSION["profile_name"] = $username;
+
+header("Location: ../index.php");
+exit();
