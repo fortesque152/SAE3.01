@@ -7,10 +7,9 @@ import { UserProfile } from "./modele/UserProfile.js";
 
 const loader = document.getElementById("loaderContainer") as HTMLElement;
 
-const user = new UserProfile("Corona","Nikola","bike");
-
 export class MobileApp {
   public userPos: GeoLocation | null = null;
+  public user: UserProfile ; // profil obligatoire
   public nearestParking: any = null;
   private watchId: number | null = null;
   private lastPos: GeoLocation | null = null;
@@ -21,37 +20,40 @@ export class MobileApp {
   private parkCtrl: ParkingController;
   private itineraryCtrl: ItineraryController;
 
-  constructor() {
+  constructor(user: UserProfile ) {
     this.map = new MapView();
     this.locCtrl = new LocationController();
     this.parkCtrl = new ParkingController();
     this.itineraryCtrl = new ItineraryController();
+    this.user = user ;
   }
 
+  /** Démarre l'application, récupère la position et les parkings filtrés */
   async start() {
     loader.style.display = "flex";
     try {
       const userPos = await this.locCtrl.getUserLocation();
       this.userPos = userPos;
-
       this.map.setUserMarker(userPos);
 
-      const parkings = await this.parkCtrl.getParkings(user);
+      // Récupère les parkings filtrés selon le profil utilisateur
+      const parkings = await this.parkCtrl.getParkings(this.user);
       if (!parkings || parkings.length === 0) {
         console.warn("Aucun parking trouvé");
         return;
       }
 
+      // Cherche le parking le plus proche
       this.nearestParking = parkings.reduce((closest, curr) => {
         const distCurr = this.getDistance(userPos, curr.location);
         const distClosest = this.getDistance(userPos, closest.location);
         return distCurr < distClosest ? curr : closest;
       }, parkings[0]);
-      
+
+      // Affiche tous les parkings sur la carte
       for (const p of parkings) {
         this.map.setParkingMarker(p);
       }
-      
 
       console.log("Application prête. Cliquez sur le bouton pour démarrer le trajet.");
     } catch (err) {
@@ -61,6 +63,7 @@ export class MobileApp {
     }
   }
 
+  /** Calcule la distance entre deux points GPS en mètres */
   private getDistance(a: GeoLocation, b: GeoLocation): number {
     const R = 6371e3;
     const φ1 = (a.latitude * Math.PI) / 180;
@@ -74,6 +77,7 @@ export class MobileApp {
     return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
   }
 
+  /** Affiche l'itinéraire entre deux points */
   async showRoute(start: GeoLocation, end: GeoLocation) {
     const route = await this.itineraryCtrl.getItinerary(start, end);
     if (!route?.features?.[0]?.geometry) return null;
@@ -91,10 +95,9 @@ export class MobileApp {
     return { distanceKm: Number(distanceKm), duration: durationStr };
   }
 
-
+  /** Suivi en temps réel de l'utilisateur vers le parking le plus proche */
   public startTracking(): void {
-    if (!navigator.geolocation) return;
-    if (!this.nearestParking?.location) return;
+    if (!navigator.geolocation || !this.nearestParking?.location) return;
 
     if (this.watchId !== null) {
       navigator.geolocation.clearWatch(this.watchId);
@@ -104,11 +107,7 @@ export class MobileApp {
     this.watchId = navigator.geolocation.watchPosition(
       async (pos) => {
         try {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-
-          this.userPos = new GeoLocation(lat, lon);
-
+          this.userPos = new GeoLocation(pos.coords.latitude, pos.coords.longitude);
           this.map.setUserMarker(this.userPos, true);
 
           const route = await this.itineraryCtrl.getItinerary(
@@ -116,6 +115,7 @@ export class MobileApp {
             this.nearestParking.location
           );
 
+          const routeInfoEl = document.getElementById("routeInfo");
           if (route?.features?.[0]?.geometry) {
             const coords = route.features[0].geometry.coordinates;
             this.map.drawRoute(coords, this.userPos, false);
@@ -127,10 +127,8 @@ export class MobileApp {
                 ? `${Math.round(summary.duration / 60)} min`
                 : `${Math.floor(summary.duration / 3600)} h ${Math.round((summary.duration % 3600) / 60)} min`;
 
-            const routeInfoEl = document.getElementById("routeInfo");
             if (routeInfoEl) routeInfoEl.textContent = `Distance : ${Number(distanceKm)} km | Durée : ${durationStr}`;
           } else {
-            const routeInfoEl = document.getElementById("routeInfo");
             if (routeInfoEl) routeInfoEl.textContent = "Itinéraire indisponible";
           }
         } catch (err) {
