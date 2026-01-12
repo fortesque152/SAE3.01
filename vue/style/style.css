@@ -1,3 +1,4 @@
+/* ------------------- Reset & Base ------------------- */
 html, body {
   margin: 0;
   padding: 0;
@@ -6,13 +7,16 @@ html, body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
+/* ------------------- Carte ------------------- */
 #map {
   height: 100%;
   width: 100%;
 }
 
+/* ------------------- Loader ------------------- */
 #loaderContainer {
   display: flex;
   flex-direction: column;
@@ -23,7 +27,7 @@ html, body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255,255,255,0.8);
   backdrop-filter: blur(1px);
   z-index: 1000;
 }
@@ -31,16 +35,11 @@ html, body {
 #loader {
   width: 48px;
   height: 48px;
-  border: 5px solid #000000;
-  border-bottom-color: #ffffff;
+  border: 5px solid #000;
+  border-bottom-color: #fff;
   border-radius: 50%;
   animation: rotation 1s linear infinite;
   margin-bottom: 20px;
-}
-
-@keyframes rotation {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 #loaderContainer h4 {
@@ -48,40 +47,106 @@ html, body {
   color: #000;
 }
 
-#userPanel {
+@keyframes rotation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ------------------- Bouton profil ------------------- */
+#panelToggle {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 300px;
-  background: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  top: 20px;
+  right: 20px;
   z-index: 1001;
+  padding: 10px 15px;
+  background: #0078ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+#panelToggle:hover {
+  background-color: #0056b3;
 }
 
-#userPanel h3 {
-  margin-top: 0;
+/* ------------------- Panel utilisateur coulissant ------------------- */
+#userPanel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  transform: translateX(100%);
+  width: 300px;
+  height: 100%;
+  background: #fff;
+  padding: 20px;
+  box-shadow: -3px 0 8px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease;
+  z-index: 1002;
+  overflow-y: auto;
 }
 
+#userPanel.open {
+  transform: translateX(0);
+}
+
+#panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#panelHeader h3 {
+  margin: 0;
+}
+
+#panelClose {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* ------------------- Infos utilisateur ------------------- */
+#userName {
+  margin: 10px 0;
+  font-weight: bold;
+}
+
+#vehicleType label {
+  display: block;
+  margin: 5px 0;
+  cursor: pointer;
+}
+
+#vehicleType input[type="radio"] {
+  margin-right: 5px;
+}
+
+/* ------------------- Favoris ------------------- */
 .favorite-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 5px;
+  padding: 5px 0;
+  border-bottom: 1px solid #ddd;
 }
 
 .favorite-item button {
   margin-left: 5px;
-  padding: 2px 6px;
+  padding: 3px 6px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 12px;
 }
 
 .favorite-item button:hover {
-  background-color: #ddd;
+  background-color: #eee;
 }
 
+/* ------------------- Bouton itinéraire ------------------- */
 #routeBtn {
   position: absolute;
   bottom: 20px;
@@ -97,9 +162,16 @@ html, body {
   cursor: pointer;
 }
 
-#routeBtn:hover { background-color: #0056b3; }
-#routeBtn:disabled { background: #999; cursor: not-allowed; }
+#routeBtn:hover {
+  background-color: #0056b3;
+}
 
+#routeBtn:disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+
+/* ------------------- Infos itinéraire ------------------- */
 #routeInfo {
   position: absolute;
   bottom: 70px;
@@ -111,4 +183,13 @@ html, body {
   font-size: 14px;
   display: none;
   z-index: 1001;
+}
+
+/* ------------------- Responsive Mobile ------------------- */
+@media (max-width: 480px){
+  #userPanel { width: 90%; }
+  #panelToggle { padding: 8px 12px; font-size: 12px; }
+  #routeBtn { padding: 8px 12px; font-size: 12px; }
+  .favorite-item button { padding: 2px 4px; font-size: 11px; }
+  #routeInfo { font-size: 12px; padding: 6px 10px; }
 }
