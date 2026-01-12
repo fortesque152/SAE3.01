@@ -17,20 +17,18 @@
   </div>
 
   <div id="map"></div>
-
   <div id="routeInfo"></div>
-
   <button id="routeBtn">Aller au parking le plus proche</button>
 
   <script src="./api/leaflet/dist/leaflet.js"></script>
 
   <script type="module">
     import { MobileApp } from "./module/MobileApp.js";
-    import { UserProfile, ProfileData } from "./module/UserProfile.js";
+    import { UserProfile } from "./module/UserProfile.js";
 
     async function initApp() {
       try {
-        // 1️⃣ récupérer le profil de l'utilisateur via PHP
+        // 1️⃣ Récupérer le profil utilisateur depuis PHP
         const res = await fetch("get_profile.php", { credentials: "include" });
         const data = await res.json();
 
@@ -40,20 +38,19 @@
           return;
         }
 
-        // 2️⃣ créer un UserProfile à partir des données PHP
-        const profile: ProfileData = {
-          ...data.profile,
-          vehicles: data.vehicles,
-          preferences: data.preferences || []
-        };
+        // 2️⃣ Créer un UserProfile à partir des données PHP
+        const user = new UserProfile({
+          name: data.profile.name,
+          surname: data.profile.surname,
+          vehicleType: data.profile.vehicleType,
+          preferences: data.profile.preferences || []
+        });
 
-        const user = new UserProfile(profile);
-
-        // 3️⃣ instancier l'application avec le profil utilisateur
+        // 3️⃣ Instancier l'application avec le profil utilisateur
         const app = new MobileApp(user);
         await app.start();
 
-        // 4️⃣ gestion du bouton itinéraire
+        // 4️⃣ Gestion du bouton itinéraire
         const routeBtn = document.getElementById("routeBtn");
         const routeInfo = document.getElementById("routeInfo");
 
@@ -82,6 +79,7 @@
       }
     }
 
+    // Lancer l'application
     initApp();
   </script>
 </body>
