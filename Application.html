@@ -24,12 +24,12 @@
 
   <script type="module">
     import { MobileApp } from "./module/MobileApp.js";
-    import { UserProfile } from "./module/UserProfile.js";
+    import { UserProfile } from "./module/modele/UserProfile.js";
 
     async function initApp() {
       try {
         // 1️⃣ Récupérer le profil utilisateur depuis PHP
-        const res = await fetch("get_profile.php", { credentials: "include" });
+        const res = await fetch("./vue/get_profile.php", { credentials: "include" });
         const data = await res.json();
 
         if (!data.connected) {
