@@ -12,7 +12,7 @@ export interface ProfileData {
   profile_id: number;
   profile_name: string;
   is_pmr: boolean;
-  vehicles: VehicleType[] ;
+  vehicles: VehicleType[];
   preferences: Preference[];
 }
 
@@ -30,34 +30,38 @@ export class UserProfile {
     this._isPMR = profile.is_pmr;
     this._vehicles = profile.vehicles || [];
     this._preferences = profile.preferences || [];
-    this._currentVehicle = this._vehicles.length > 0 ? this._vehicles[0] : null;
+    if(this._vehicles.length > 0) this._currentVehicle = this._vehicles[0];
   }
 
   getProfileId() { return this._profileId; }
   getName() { return this._name; }
   isPMR() { return this._isPMR; }
   getVehicles() { return this._vehicles; }
+  getCurrentVehicle() { return this._currentVehicle; }
   getPreferences() { return this._preferences; }
 
-  getVehicleType(): VehicleType["name"] | null {
-    return this._currentVehicle?.name || null;
+  setCurrentVehicle(vehicleName: VehicleType["name"]) {
+    const v = this._vehicles.find(v => v.name === vehicleName);
+    if(v) this._currentVehicle = v;
   }
 
-  setVehicleType(name: VehicleType["name"]) {
-    const v = this._vehicles.find(v => v.name === name) || null;
-    this._currentVehicle = v;
-  }
-
-  /** Ajouter un véhicule si le type est valide */
-  addVehicle(name: VehicleType["name"]) {
-    const exists = this._vehicles.some(v => v.name === name);
-    if (!exists) {
+  async addVehicle(name: VehicleType["name"]) {
+    const resp = await fetch("./vue/add_vehicle.php", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ vehicleType: name })
+    });
+    const result = await resp.json();
+    if(result.success && result.vehicle) {
       const newVehicle: VehicleType = {
-        vehicle_type_id: Date.now(), // simple id unique temporaire
-        name,
+        vehicle_type_id: Number(result.vehicle.vehicle_id),
+        name: result.vehicle.name
       };
       this._vehicles.push(newVehicle);
       this._currentVehicle = newVehicle;
+    } else {
+      alert("Impossible d'ajouter le véhicule");
     }
   }
 
@@ -65,12 +69,12 @@ export class UserProfile {
     const restriction = (properties.restriction_type || "").toLowerCase();
     const validPermits = (properties.valid_parking_permits || "").toLowerCase();
     const spaces = parseInt(properties.parking_spaces) || 0;
+    if(spaces < 1) return false;
+    if(!this._currentVehicle) return false;
 
-    if (spaces < 1) return false;
-    const allowedVehicle = this._vehicles.some(v => restriction.includes(v.name));
-    if (!allowedVehicle) return false;
-    if (restriction.includes("pmr") && !this._isPMR) return false;
-    if (validPermits && validPermits !== "n/a") return false;
+    if(!restriction.includes(this._currentVehicle.name)) return false;
+    if(restriction.includes("pmr") && !this._isPMR) return false;
+    if(validPermits && validPermits !== "n/a") return false;
 
     return true;
   }
