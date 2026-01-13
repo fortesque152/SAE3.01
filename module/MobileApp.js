@@ -25,7 +25,7 @@ export class MobileApp {
             this.userPos = userPos;
             this.map.setUserMarker(userPos);
             // Récupère les parkings filtrés selon le profil utilisateur
-            const parkings = await this.parkCtrl.getParkings(this.user);
+            const parkings = await this.parkCtrl.getParkings(this.user, userPos);
             if (!parkings || parkings.length === 0) {
                 console.warn("Aucun parking trouvé");
                 return;

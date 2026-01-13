@@ -188,7 +188,7 @@
           const app = new MobileApp(user);
           await app.start();
           // S'assurer que les parkings sont accessibles depuis app.parkCtrl
-          app.parkCtrl.parkings = await app.parkCtrl.getParkings(user);
+          app.parkCtrl.parkings = await app.parkCtrl.getParkings(user, app.userPos || undefined);
 
           // Render favoris
           function renderFavorites() {
