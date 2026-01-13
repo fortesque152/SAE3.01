@@ -32,7 +32,6 @@
 
       <h4>Véhicules</h4>
       <div id="vehicleType"></div>
-
       <button id="showAddVehicleBtn">Ajouter un véhicule</button>
 
       <form id="addVehicleForm">
@@ -62,6 +61,7 @@
     <script type="module">
       import { MobileApp } from "./module/MobileApp.js";
       import { UserProfile } from "./module/modele/UserProfile.js";
+      import {Parking} from "./module/modele/Parking.js";
 
       async function initApp() {
         const loader = document.getElementById("loaderContainer");
@@ -80,6 +80,8 @@
         const panelToggle = document.getElementById("panelToggle");
         const panelClose = document.getElementById("panelClose");
         const userPanel = document.getElementById("userPanel");
+        const routeBtn = document.getElementById("routeBtn");
+        const routeInfo = document.getElementById("routeInfo");
 
         // Panel toggle
         panelToggle.addEventListener(
@@ -98,6 +100,7 @@
         });
 
         try {
+          // Récupération profil
           const res = await fetch("./vue/get_profile.php", {
             credentials: "include",
           });
@@ -107,7 +110,7 @@
             window.location.href = "index.php";
             return;
           }
-          console.log(data);
+
           const user = new UserProfile({
             profile_id: data.profile.profile_id,
             profile_name: data.profile.name,
@@ -123,7 +126,7 @@
           function renderVehicles() {
             vehicleTypeDiv.innerHTML = "";
             const userVehicles = user.getVehicles();
-            if (userVehicles.length === 0) {
+            if (!userVehicles.length) {
               vehicleTypeDiv.textContent = "Aucun véhicule";
               return;
             }
@@ -134,21 +137,26 @@
                   i === 0 ? "checked" : ""
                 }> ${v.vehicle_name} (${v.name})`;
               vehicleTypeDiv.appendChild(label);
-              const input = label.querySelector("input");
-              input.addEventListener("change", async (e) => {
-                await fetch("./vue/set_vehicule.php", {
-                  method: "POST",
-                  credentials: "include",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ vehicleName: e.target.value }),
-                });
-              });
+              label.querySelector("input").addEventListener(
+                "change",
+                async (e) => {
+                  await fetch("./vue/set_vehicule.php", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      vehicleName: e.target.value,
+                    }),
+                  });
+                },
+              );
             });
           }
+
           await user.reloadVehicles();
           renderVehicles();
 
-          // Ajout véhicule
+          // Ajouter véhicule
           addVehicleForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             const name = vehicleNameInput.value.trim();
@@ -162,11 +170,10 @@
               body: JSON.stringify({ name, type }),
             });
             const result = await resp.json();
-            console.log(result);
             if (result.success) {
               user.addVehicle({
-                name: result.vehicle.name,
-                type: result.vehicle.type,
+                vehicle_name: result.vehicle.name,
+                name: result.vehicle.type,
               });
               renderVehicles();
               vehicleNameInput.value = "";
@@ -177,26 +184,70 @@
             }
           });
 
+          // Initialiser MobileApp
+          const app = new MobileApp(user);
+          await app.start();
+          // S'assurer que les parkings sont accessibles depuis app.parkCtrl
+          app.parkCtrl.parkings = await app.parkCtrl.getParkings(user);
+
           // Render favoris
           function renderFavorites() {
             favoritesList.innerHTML = "";
             (data.favorites || []).forEach((f) => {
               const div = document.createElement("div");
               div.className = "favorite-item";
-              div.innerHTML = `<span>${f.name}</span><span>
-              <button class="goFav" data-id="${f.parking_id}">Aller</button>
-              <button class="removeFav" data-id="${f.parking_id}">Supprimer</button></span>`;
+              div.innerHTML = `
+                <span>${f.name}</span>
+                <span>
+                  <button class="goFav" data-id="${f.apiId}">Aller</button>
+                  <button class="removeFav" data-id="${f.apiId}">Supprimer</button>
+                </span>`;
               favoritesList.appendChild(div);
             });
           }
           renderFavorites();
 
-          const app = new MobileApp(user);
-          await app.start();
+          // Écoute clics sur favoris
+          favoritesList.addEventListener("click", async (e) => {
+            if (e.target.classList.contains("goFav")) {
+              const parkingId = e.target.dataset.id;
+              // Récupère les coordonnées depuis la BDD
+              const res = await fetch("./vue/get_parking_coords.php", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ parkingId }),
+              });
 
-          const routeBtn = document.getElementById("routeBtn");
-          const routeInfo = document.getElementById("routeInfo");
+              const data = await res.json();
+              if (!data.success) return alert("Parking introuvable");
 
+              const location = {
+                latitude: parseFloat(data.latitude),
+                longitude: parseFloat(data.longitude),
+              };
+              const parkingFav = new Parking(data.apiId,data.name,location,0);
+              app.nearestParking = parkingFav; // ou tu ajoutes d'autres infos si nécessaire
+              console.log(location)
+              app.map.setNearestParkingMarker(app.nearestParking);
+              app.startTracking();
+
+              if (app.userPos) {
+                const result = await app.showRoute(
+                  app.userPos,
+                  location,
+                );
+                const routeInfo = document.getElementById("routeInfo");
+                if (result && routeInfo) {
+                  routeInfo.textContent =
+                    `Distance : ${result.distanceKm} km | Durée : ${result.duration}`;
+                  routeInfo.style.display = "block";
+                }
+              }
+            }
+          });
+
+          // Bouton itinéraire vers parking le plus proche
           routeBtn.addEventListener("click", async () => {
             if (!app.userPos || !app.nearestParking) {
               alert("Position en cours");
@@ -206,6 +257,7 @@
             app.startTracking();
             routeBtn.disabled = true;
             routeBtn.textContent = "Itinéraire affiché";
+
             const result = await app.showRoute(
               app.userPos,
               app.nearestParking.location,
@@ -214,35 +266,6 @@
               routeInfo.textContent =
                 `Distance : ${result.distanceKm} km | Durée : ${result.duration}`;
               routeInfo.style.display = "block";
-            }
-          });
-
-          favoritesList.addEventListener("click", async (e) => {
-            if (e.target.classList.contains("goFav")) {
-              const id = e.target.dataset.id;
-              const park = app.parkCtrl.parkings.find((p) =>
-                p.parking_id == id
-              );
-              if (park) {
-                app.nearestParking = park;
-                app.map.setNearestParkingMarker(park);
-                app.startTracking();
-              }
-            } else if (e.target.classList.contains("removeFav")) {
-              const id = e.target.dataset.id;
-              const resp = await fetch("./vue/remove_favorite.php", {
-                method: "POST",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ parkingId: id }),
-              });
-              const result = await resp.json();
-              if (result.success) {
-                data.favorites = data.favorites.filter((f) =>
-                  f.parking_id != id
-                );
-                renderFavorites();
-              }
             }
           });
         } catch (err) {

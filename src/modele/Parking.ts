@@ -37,4 +37,11 @@ export class Parking {
         this._spots = available;
     }
 
+    getLocation(){
+        return this._location;
+    }
+
+    getSpot(){
+        return this._spots;
+    }
 }

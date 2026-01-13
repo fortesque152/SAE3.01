@@ -70,12 +70,58 @@ export class MapView {
     }
   }
 
-  setParkingMarker(parking: Parking) {
-    const marker = L.marker([parking.location.latitude, parking.location.longitude], {
-      title: parking.getlib(),
-    }).addTo(this.map);
-    marker.bindPopup(`<strong>${parking.getlib()}</strong>`);
+
+  setParkingMarker(parking: any) {
+    const marker = L.marker([
+      parking.location.latitude,
+      parking.location.longitude
+    ]).addTo(this.map);
+ 
+    marker.bindPopup(`
+    <div class="popup-parking">
+      <strong>${parking.getlib()}</strong><br>
+      <button class="add-fav-btn">
+        ⭐ Ajouter aux favoris
+      </button>
+    </div>
+  `);
+
+    // Event existant (tu le gardes)
+    marker.on("click", () => {
+      document.dispatchEvent(
+        new CustomEvent("parkingSelected", { detail: parking })
+      );
+    });
+
+    // IMPORTANT : récupération correcte du bouton
+    marker.on("popupopen", (e: any) => {
+      const popupEl = e.popup.getElement();
+      const btn = popupEl.querySelector(".add-fav-btn") as HTMLButtonElement;
+
+      if (!btn) return;
+
+      btn.addEventListener("click", async () => {
+        const res = await fetch("./vue/add_favorite.php", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ parkingId: parking.getId(), lib : parking.getlib(),long : parking.getLocation().longitude,lat : parking.getLocation().latitude, spot : parking.getSpot()}),
+        });
+
+        const data = await res.json();
+
+
+        if (data.success) {
+          btn.textContent = "⭐ Ajouté";
+          btn.disabled = true;
+        } else {
+          alert(data.message || "Erreur ajout favori");
+        }
+      });
+    });
   }
+
+
 
   setNearestParkingMarker(parking: Parking) {
     const iconP = L.icon({
@@ -94,6 +140,7 @@ export class MapView {
       icon: iconP,
     }).addTo(this.map);
     marker.bindPopup(`<strong>Parking le plus proche</strong><br>${parking.getlib()}`);
+    console.log(parking)
   }
 
   drawRoute(polyline: any, currentPos?: GeoLocation, fitBounds: boolean = true) {

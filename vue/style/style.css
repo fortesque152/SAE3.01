@@ -241,3 +241,21 @@ html, body {
   #routeInfo { font-size: 12px; padding: 6px 10px; }
   #addVehicleForm input, #addVehicleForm select, #addVehicleForm button { font-size: 12px; }
 }
+
+.leaflet-popup-content {
+  margin: 8px;
+}
+
+.popup-parking {
+  text-align: center;
+}
+
+.popup-parking button {
+  margin-top: 6px;
+  padding: 6px 10px;
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  background: #ffcc00;
+  cursor: pointer;
+}
