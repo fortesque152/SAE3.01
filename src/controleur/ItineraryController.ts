@@ -5,8 +5,8 @@ export class ItineraryController {
 
 
     async getItinerary(start: GeoLocation, end: GeoLocation): Promise<any> {
-        const url = `https://api.openrouteservice.org/v2/directions/driving-car/geojson
-`;
+        const url = "./vue/route.php";
+
 
 
         const body = {
@@ -18,14 +18,12 @@ export class ItineraryController {
 
 
         const res = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Authorization": this.apiKey,
-                "Content-Type": "application/json",
-                "Accept": "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8"
-            },
-            body: JSON.stringify(body)
-        });
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+});
 
         if (!res.ok) {
             // Fournir un message d'erreur plus explicite pour le debug côté client
