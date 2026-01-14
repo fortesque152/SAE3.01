@@ -259,3 +259,51 @@ html, body {
   background: #ffcc00;
   cursor: pointer;
 }
+/* ------------------- Bouton Annuler le guidage ------------------- */
+#cancelBtn {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001;
+  padding: 10px 15px;
+  background: #ff4d4f; /* rouge pour annuler */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  display: none; /* caché par défaut */
+}
+
+#cancelBtn:hover {
+  background-color: #d9363e; /* rouge plus foncé au hover */
+}
+
+#cancelBtn:disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+
+/* ------------------- Responsive Mobile ------------------- */
+@media (max-width: 480px) {
+  #cancelBtn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+#removeVehicleBtn {
+  margin-top: 8px;
+  padding: 6px 10px;
+  width: 100%;
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#removeVehicleBtn:hover {
+  background-color: #c9302c;
+}

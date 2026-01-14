@@ -11,7 +11,7 @@ if (!$parkingId) {
     exit;
 }
 
-$stmt = $pdo->prepare("SELECT apiId,name,latitude, longitude FROM parking WHERE apiId = ?");
+$stmt = $pdo->prepare("SELECT apiId,name,latitude, longitude FROM parking WHERE parking_id = ?");
 $stmt->execute([$parkingId]);
 $parking = $stmt->fetch(PDO::FETCH_ASSOC);
 

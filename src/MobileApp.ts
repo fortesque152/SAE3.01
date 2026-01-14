@@ -159,14 +159,15 @@ export class MobileApp {
             this.map.drawRoute(coords, this.userPos, false);
 
             const summary = route.features[0].properties.summary;
-            const distanceKm = (summary.distance / 200).toFixed(1);
+            const distanceKm = (summary.distance / 1000).toFixed(1);
+            console.log(distanceKm)
             const durationStr =
               summary.duration < 3600
                 ? `${Math.round(summary.duration / 60)} min`
                 : `${Math.floor(summary.duration / 3600)} h ${Math.round(
                     (summary.duration % 3600) / 60
                   )} min`;
-
+      
             if (routeInfoEl)
               routeInfoEl.textContent = `Distance : ${Number(
                 distanceKm

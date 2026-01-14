@@ -1,6 +1,7 @@
 export interface VehicleType {
   vehicle_name: string;
   name: "car" | "electric" | "motorcycle";
+  id: number;
 }
 
 export interface Preference {
@@ -62,7 +63,8 @@ export class UserProfile {
       for (const v of data.vehicles) {
         tab.push({
           vehicle_name: v.name,
-          name: v.type
+          name: v.type,
+          id : v.id
         });
       }
       return tab;
@@ -79,7 +81,6 @@ export class UserProfile {
     this._currentVehicle = this._vehicles.length > 0 ? this._vehicles[0] : null;
   }
 
-
   canPark(properties: any): boolean {
     const restriction = (properties.restriction_type || "").toLowerCase();
     const validPermits = (properties.valid_parking_permits || "").toLowerCase();
@@ -93,4 +94,5 @@ export class UserProfile {
 
     return true;
   }
+
 }

@@ -17,7 +17,7 @@ $profile_id = $_SESSION['profile_id'];
 try {
     // Requête pour récupérer les véhicules liés au profil
     $stmt = $pdo->prepare("
-        SELECT vt.vehicle_type_id, vt.name, vt.type_vehicule AS type
+        SELECT vt.vehicle_type_id AS id, vt.name, vt.type_vehicule AS type
         FROM vehicle_type vt
         INNER JOIN profile_vehicle_type pvt 
             ON vt.vehicle_type_id = pvt.vehicle_type_id

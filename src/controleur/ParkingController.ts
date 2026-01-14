@@ -96,7 +96,7 @@ out center 500;
 
       if (dataLondres?.features) {
         dataLondres.features.forEach((p: any) => {
-          if (!user.canPark(p.properties)) return;
+
 
           const id = `londres-${p.properties.unique_identifier || p.id}`;
           const name =

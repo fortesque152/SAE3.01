@@ -75,8 +75,6 @@ out center 500;
             const dataLondres = await resLondres.json();
             if (dataLondres?.features) {
                 dataLondres.features.forEach((p) => {
-                    if (!user.canPark(p.properties))
-                        return;
                     const id = `londres-${p.properties.unique_identifier || p.id}`;
                     const name = `${p.properties.road_name || "Unknown Road"} - ` +
                         `${p.properties.restriction_type || "Parking"}`;

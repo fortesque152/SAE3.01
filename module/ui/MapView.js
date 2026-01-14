@@ -81,25 +81,38 @@ export class MapView {
             if (!btn)
                 return;
             btn.addEventListener("click", async () => {
-                const res = await fetch("./vue/add_favorite.php", {
-                    method: "POST",
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        parkingId: parking.getId(),
-                        lib: parking.getlib(),
-                        long: parking.getLocation().longitude,
-                        lat: parking.getLocation().latitude,
-                        spot: parking.getSpot(),
-                    }),
-                });
-                const data = await res.json();
-                if (data.success) {
-                    btn.textContent = "⭐ Ajouté";
-                    btn.disabled = true;
+                try {
+                    const res = await fetch("./vue/add_favorite.php", {
+                        method: "POST",
+                        credentials: "include",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            parkingId: parking.getId(),
+                            lib: parking.getlib(),
+                            long: parking.getLocation().longitude,
+                            lat: parking.getLocation().latitude,
+                            spot: parking.getSpot(),
+                        }),
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        btn.textContent = "⭐ Ajouté";
+                        btn.disabled = true;
+                        // Dispatch event pour le panel
+                        document.dispatchEvent(new CustomEvent("favoriteAdded", {
+                            detail: {
+                                apiId: parking.getId(),
+                                name: parking.getlib(),
+                            },
+                        }));
+                    }
+                    else {
+                        alert(data.message || "Erreur ajout favori");
+                    }
                 }
-                else {
-                    alert(data.message || "Erreur ajout favori");
+                catch (err) {
+                    console.error(err);
+                    alert("Erreur réseau lors de l'ajout du favori");
                 }
             });
         });

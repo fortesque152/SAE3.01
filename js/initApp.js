@@ -3,6 +3,7 @@ import { UserProfile } from "../module/modele/UserProfile.js";
 import { initVehiclesUI } from "./vehiclesUI.js";
 import { initFavoritesUI } from "./favoritesUI.js";
 import { initPanelUI } from "./panelUI.js";
+import { initNavigationUI } from "./navigationUI.js";
 
 export async function initApp() {
   const res = await fetch("./vue/get_profile.php", { credentials: "include" });
@@ -19,9 +20,11 @@ export async function initApp() {
   const app = new MobileApp(user);
   await app.start();
 
+  // Initialisation des UI
   initPanelUI();
   initVehiclesUI(user);
   initFavoritesUI(app);
+  initNavigationUI(app);
 }
 
 initApp();

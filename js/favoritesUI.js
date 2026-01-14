@@ -1,6 +1,11 @@
+import { Parking } from "../module/modele/Parking.js";
+import { GeoLocation } from "../module/modele/GeoLocation.js";
+
 export async function initFavoritesUI(app) {
   const favoritesList = document.getElementById("favoritesList");
   const routeInfo = document.getElementById("routeInfo");
+
+  let favoritesData = [];
 
   async function loadFavorites() {
     const res = await fetch("./vue/get_favorites.php", {
@@ -8,9 +13,14 @@ export async function initFavoritesUI(app) {
     });
     const data = await res.json();
 
+    favoritesData = data.favorites || [];
+    renderFavorites();
+  }
+
+  function renderFavorites() {
     favoritesList.innerHTML = "";
 
-    data.favorites.forEach(f => {
+    favoritesData.forEach(f => {
       favoritesList.innerHTML += `
         <div class="favorite-item">
           <span>${f.name}</span>
@@ -18,13 +28,25 @@ export async function initFavoritesUI(app) {
           <button class="removeFav" data-id="${f.parking_id}">Supprimer</button>
         </div>
       `;
+
     });
   }
+  // Écoute les favoris ajoutés depuis la carte
+  document.addEventListener("favoriteAdded", e => {
+    const fav = e.detail;
+    // Évite les doublons
+    if (!favoritesData.find(f => f.apiId === fav.apiId)) {
+      loadFavorites();
+      renderFavorites();
+    }
+  });
 
   favoritesList.addEventListener("click", async e => {
-    if (e.target.classList.contains("goFav")) {
-      const parkingId = e.target.dataset.id;
+    const target = e.target;
+    if (!target) return;
 
+    if (target.classList.contains("goFav")) {
+      const parkingId = target.dataset.id;
       const res = await fetch("./vue/get_parking_coords.php", {
         method: "POST",
         credentials: "include",
@@ -33,20 +55,44 @@ export async function initFavoritesUI(app) {
       });
 
       const data = await res.json();
-      app.nearestParking = { location: data };
+      if (!data.success) return alert("Parking introuvable");
+
+      app.nearestParking = { location: { latitude: parseFloat(data.latitude), longitude: parseFloat(data.longitude) } };
+      const nearest = new Parking(data.apiId, data.name, new GeoLocation(data.latitude, data.longitude));
+      app.map.setNearestParkingMarker(nearest);
       app.startTracking();
+      const result = await app.showRoute(app.userPos, nearest.getLocation());
+      console.log(result)
+      if (result) {
+        routeInfo.textContent = `Distance : ${result.distanceKm} km | Durée : ${result.duration}`;
+        routeInfo.style.display = "block";
+      }
+
+      // Affiche le bouton Annuler
+      cancelBtn.style.display = "block";
+
+      // Désactive le bouton Itinéraire
+      routeBtn.disabled = true;
+      routeBtn.textContent = "Itinéraire affiché";
+
     }
 
-    if (e.target.classList.contains("removeFav")) {
+    if (target.classList.contains("removeFav")) {
+      const parkingId = target.dataset.id;
+      console.log(target.dataset);
       await fetch("./vue/remove_favorite.php", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ parkingId: e.target.dataset.id }),
+        body: JSON.stringify({ parkingId }),
       });
-      loadFavorites();
+
+      // Met à jour localement sans recharger tout du serveur
+      favoritesData = favoritesData.filter(f => String(f.parking_id) !== String(parkingId));
+      renderFavorites();
     }
   });
 
-  loadFavorites();
+
+  await loadFavorites();
 }

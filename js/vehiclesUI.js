@@ -25,19 +25,13 @@ export function initVehiclesUI(user) {
     vehicles.forEach((v, i) => {
       const label = document.createElement("label");
       label.innerHTML = `
-        <input type="radio" name="vehicle" value="${v.vehicle_name}" ${i === 0 ? "checked" : ""}>
+        <input type="radio" name="vehicle"  id="${v.id}" value="${v.vehicle_name}" ${i === 0 ? "checked" : ""}>
         ${v.vehicle_name} (${v.name})
       `;
       vehicleTypeDiv.appendChild(label);
 
       label.querySelector("input").addEventListener("change", async (e) => {
         user.setCurrentVehicle(v.name);
-        await fetch("./vue/set_vehicule.php", {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ vehicleName: e.target.value }),
-        });
       });
     });
   }
@@ -72,6 +66,48 @@ export function initVehiclesUI(user) {
     }
   });
 
+
+
+  const removeVehicleBtn = document.getElementById("removeVehicleBtn");
+
+  removeVehicleBtn.addEventListener("click", async () => {
+    const selected = document.querySelector('input[name="vehicle"]:checked');
+
+    if (!selected) {
+      alert("Veuillez sélectionner un véhicule à supprimer.");
+      return;
+    }
+
+    const vehicleType = selected.id;
+
+    if (!confirm("Supprimer ce véhicule ?")) return;
+    const res = await fetch("./vue/remove_vehicle.php", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ vehicleType }),
+    });
+
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      alert("Erreur serveur (PHP)");
+      return;
+    }
+
+    if (!data.success) {
+      alert(data.message || "Erreur suppression");
+      return;
+    }
+
+
+    // Recharge les véhicules depuis la BDD
+    await user.reloadVehicles();
+
+    // Réaffiche l'UI
+    renderVehicles();
+  });
   // Chargement initial
   user.reloadVehicles().then(renderVehicles);
 }

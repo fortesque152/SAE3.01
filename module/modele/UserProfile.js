@@ -34,7 +34,8 @@ export class UserProfile {
             for (const v of data.vehicles) {
                 tab.push({
                     vehicle_name: v.name,
-                    name: v.type
+                    name: v.type,
+                    id: v.id
                 });
             }
             return tab;

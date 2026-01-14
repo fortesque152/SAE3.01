@@ -33,6 +33,7 @@
       <h4>Véhicules</h4>
       <div id="vehicleType"></div>
       <button id="showAddVehicleBtn">Ajouter un véhicule</button>
+      <button id="removeVehicleBtn" class="danger">Supprimer le véhicule sélectionné</button>
 
       <form id="addVehicleForm">
         <input
@@ -47,6 +48,7 @@
           <option value="motorcycle">Moto</option>
         </select>
         <button type="submit">Ajouter</button>
+        
       </form>
 
       <h4>Parkings favoris</h4>
@@ -56,6 +58,7 @@
     <!-- Infos itinéraire -->
     <div id="routeInfo"></div>
     <button id="routeBtn">Aller au parking le plus proche</button>
+    <button id="cancelBtn" style="display:none">Annuler le guidage</button>
 
     <script src="./api/leaflet/dist/leaflet.js"></script>
     <script type="module" src="./js/initApp.js"></script>

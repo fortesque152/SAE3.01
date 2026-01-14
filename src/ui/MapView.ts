@@ -2,6 +2,7 @@ import { GeoLocation } from "../modele/GeoLocation.js";
 import { Parking } from "../modele/Parking.js";
 import { LocationController } from "../controleur/LocationController.js";
 
+
 declare const L: any;
 
 export class MapView {
@@ -108,30 +109,45 @@ export class MapView {
       const btn = popupEl.querySelector(".add-fav-btn") as HTMLButtonElement;
 
       if (!btn) return;
-
       btn.addEventListener("click", async () => {
-        const res = await fetch("./vue/add_favorite.php", {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            parkingId: parking.getId(),
-            lib: parking.getlib(),
-            long: parking.getLocation().longitude,
-            lat: parking.getLocation().latitude,
-            spot: parking.getSpot(),
-          }),
-        });
+        try {
+          const res = await fetch("./vue/add_favorite.php", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              parkingId: parking.getId(),
+              lib: parking.getlib(),
+              long: parking.getLocation().longitude,
+              lat: parking.getLocation().latitude,
+              spot: parking.getSpot(),
+            }),
+          });
 
-        const data = await res.json();
+          const data = await res.json();
 
-        if (data.success) {
-          btn.textContent = "⭐ Ajouté";
-          btn.disabled = true;
-        } else {
-          alert(data.message || "Erreur ajout favori");
+          if (data.success) {
+            btn.textContent = "⭐ Ajouté";
+            btn.disabled = true;
+
+            // Dispatch event pour le panel
+            document.dispatchEvent(
+              new CustomEvent("favoriteAdded", {
+                detail: {
+                  apiId: parking.getId(),
+                  name: parking.getlib(),
+                },
+              })
+            );
+          } else {
+            alert(data.message || "Erreur ajout favori");
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Erreur réseau lors de l'ajout du favori");
         }
       });
+
     });
   }
 
@@ -239,8 +255,7 @@ export class MapView {
     if (id) this.parkingMarkers.set(id, marker);
 
     marker.bindPopup(
-      `<strong>⭐ ${
-        parking.getLib?.() ?? parking._lib ?? "Favorite parking"
+      `<strong>⭐ ${parking.getLib?.() ?? parking._lib ?? "Favorite parking"
       }</strong>`
     );
   }
