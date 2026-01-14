@@ -3,15 +3,12 @@ import { GeoLocation } from "../modele/GeoLocation.js";
 import { UserProfile } from "../modele/UserProfile.js";
 
 export class ParkingController {
-  private urlMetz =
-    "https://maps.eurometropolemetz.eu/public/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=public:pub_tsp_sta&srsName=EPSG:4326&outputFormat=application/json&cql_lter=id%20is%20not%20null";
-
   private overpassUrls = [
     "https://overpass.kumi.systems/api/interpreter",
     "https://overpass-api.de/api/interpreter",
   ];
-  private tflPlaceUrl = "https://api.tfl.gov.uk/Place";
 
+  private urlLondres = "api/londre/Parking_Bays_20260109.geojson";
   private radiusMeters = 10_000;
 
   async getParkings(
@@ -20,30 +17,11 @@ export class ParkingController {
   ): Promise<Parking[]> {
     const parkings: Parking[] = [];
 
-    /* ======================
-           PARKINGS DE METZ
-        ====================== */
-    const resMetz = await fetch(this.urlMetz);
-    const dataMetz = await resMetz.json();
-
-    if (dataMetz.features) {
-      dataMetz.features.forEach((p: any) => {
-        const id = `metz-${p.properties.id || p.id}`;
-        const name = p.properties.lib || "Parking Metz";
-        const capacity = p.properties.capacite || 0;
-        const [lon, lat] = p.geometry.coordinates;
-        const location = new GeoLocation(lat, lon);
-
-        // Ici on suppose que Metz n'a pas de restrictions pour le type de véhicule
-        parkings.push(new Parking(id, name, location, capacity));
-      });
-    }
-
     const ref = center ?? new GeoLocation(49.1193, 6.1757);
 
     /* ======================
-           PARKINGS FRANCE
-        ====================== */
+        PARKINGS FRANCE (OSM)
+       ====================== */
     try {
       const overpassQuery = `
 [out:json][timeout:25];
@@ -62,37 +40,29 @@ out center 500;
           const resOSM = await fetch(url, {
             method: "POST",
             headers: {
-              "Content-Type":
-                "application/x-www-form-urlencoded; charset=UTF-8",
+              "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
             },
             body: new URLSearchParams({ data: overpassQuery }).toString(),
           });
 
-          const textOSM = await resOSM.text();
-
           if (!resOSM.ok) {
-            console.warn("Overpass indisponible:", resOSM.status, url);
-            continue; // on essaye l’URL suivante
+            console.warn("Overpass indisponible :", resOSM.status, url);
+            continue;
           }
 
-          dataOSM = JSON.parse(textOSM);
-          break; // ✅ succès → on sort de la boucle
+          dataOSM = JSON.parse(await resOSM.text());
+          break;
         } catch (e) {
-          console.warn("Overpass failed on", url, e);
+          console.warn("Échec Overpass sur", url, e);
         }
-      }
-
-      if (!dataOSM?.elements) {
-        return parkings; // aucune instance Overpass n’a répondu
       }
 
       if (dataOSM?.elements) {
         dataOSM.elements.forEach((el: any) => {
           const tags = el.tags ?? {};
           const name = tags.name || "Parking";
-          const capacity = Number.parseInt(tags.capacity) || 0;
+          const capacity = parseInt(tags.capacity) || 0;
 
-          // Overpass renvoie soit lat/lon (node), soit center.{lat,lon} (way/relation)
           const lat = el.lat ?? el.center?.lat;
           const lon = el.lon ?? el.center?.lon;
           if (typeof lat !== "number" || typeof lon !== "number") return;
@@ -108,54 +78,43 @@ out center 500;
     }
 
     /* ======================
-           PARKINGS DE LONDRES
-        ====================== */
+        PARKINGS DE LONDRES
+       ====================== */
     try {
-      // Si l'utilisateur est très loin de Londres, on prend un centre fixe (évite un résultat vide inutile)
-      const londonCenter = new GeoLocation(51.5074, -0.1278);
-      const distanceToLondon = this.haversineMeters(ref, londonCenter);
-      const tflCenter = distanceToLondon < 80_000 ? ref : londonCenter;
+      const resLondres = await fetch(this.urlLondres);
 
-      const tflUrl = new URL(this.tflPlaceUrl);
-      tflUrl.searchParams.set("lat", String(tflCenter.latitude));
-      tflUrl.searchParams.set("lon", String(tflCenter.longitude));
-      tflUrl.searchParams.set("radius", String(this.radiusMeters));
-      tflUrl.searchParams.set("placeTypes", "CarPark");
+      if (!resLondres.ok) {
+        console.warn(
+          "Fichier Londres introuvable :",
+          resLondres.status,
+          this.urlLondres
+        );
+        return parkings;
+      }
 
-      const resTfl = await fetch(tflUrl.toString());
-      const dataTfl = await resTfl.json();
+      const dataLondres = await resLondres.json();
 
-      // Réponse attendue: tableau de places
-      if (Array.isArray(dataTfl)) {
-        dataTfl.forEach((p: any) => {
-          const lat = p.lat;
-          const lon = p.lon;
-          if (typeof lat !== "number" || typeof lon !== "number") return;
+      if (dataLondres?.features) {
+        dataLondres.features.forEach((p: any) => {
+          if (!user.canPark(p.properties)) return;
 
-          const id = `tfl-${p.id || (p.commonName ?? "carpark")}`;
-          const name = p.commonName || "Car Park";
-          const capacity = 0;
+          const id = `londres-${p.properties.unique_identifier || p.id}`;
+          const name =
+            `${p.properties.road_name || "Unknown Road"} - ` +
+            `${p.properties.restriction_type || "Parking"}`;
+
+          const capacity = parseInt(p.properties.parking_spaces) || 1;
+          const [lon, lat] = p.geometry.coordinates;
+
           parkings.push(
             new Parking(id, name, new GeoLocation(lat, lon), capacity)
           );
         });
       }
     } catch (e) {
-      console.warn("TfL indisponible :", e);
+      console.warn("Erreur chargement parkings Londres :", e);
     }
 
     return parkings;
-  }
-
-  private haversineMeters(a: GeoLocation, b: GeoLocation): number {
-    const R = 6371e3;
-    const φ1 = (a.latitude * Math.PI) / 180;
-    const φ2 = (b.latitude * Math.PI) / 180;
-    const Δφ = ((b.latitude - a.latitude) * Math.PI) / 180;
-    const Δλ = ((b.longitude - a.longitude) * Math.PI) / 180;
-    const x =
-      Math.sin(Δφ / 2) ** 2 +
-      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-    return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
   }
 }
