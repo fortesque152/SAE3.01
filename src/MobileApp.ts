@@ -9,23 +9,24 @@ const loader = document.getElementById("loaderContainer") as HTMLElement;
 
 export class MobileApp {
   public userPos: GeoLocation | null = null;
-  public user: UserProfile ; // profil obligatoire
+  public user: UserProfile; // profil obligatoire
   public nearestParking: any = null;
   private watchId: number | null = null;
   private lastPos: GeoLocation | null = null;
   private routeRecalcThresholdMeters: number = 5;
+  private parkingfav : any[] = [];
 
   private map: MapView;
   private locCtrl: LocationController;
   private parkCtrl: ParkingController;
   private itineraryCtrl: ItineraryController;
 
-  constructor(user: UserProfile ) {
+  constructor(user: UserProfile) {
     this.map = new MapView();
     this.locCtrl = new LocationController();
     this.parkCtrl = new ParkingController();
     this.itineraryCtrl = new ItineraryController();
-    this.user = user ;
+    this.user = user;
   }
 
   /** Démarre l'application, récupère la position et les parkings filtrés */
@@ -35,6 +36,7 @@ export class MobileApp {
       const userPos = await this.locCtrl.getUserLocation();
       this.userPos = userPos;
       this.map.setUserMarker(userPos);
+      await this.loadAndDisplayFavorites();
 
       // Récupère les parkings filtrés selon le profil utilisateur
       const parkings = await this.parkCtrl.getParkings(this.user, userPos);
@@ -55,7 +57,9 @@ export class MobileApp {
         this.map.setParkingMarker(p);
       }
 
-      console.log("Application prête. Cliquez sur le bouton pour démarrer le trajet.");
+      console.log(
+        "Application prête. Cliquez sur le bouton pour démarrer le trajet."
+      );
     } catch (err) {
       console.error("Erreur dans start() :", err);
     } finally {
@@ -90,10 +94,36 @@ export class MobileApp {
     const durationStr =
       summary.duration < 3600
         ? `${Math.round(summary.duration / 60)} min`
-        : `${Math.floor(summary.duration / 3600)} h ${Math.round((summary.duration % 3600) / 60)} min`;
+        : `${Math.floor(summary.duration / 3600)} h ${Math.round(
+            (summary.duration % 3600) / 60
+          )} min`;
 
     return { distanceKm: Number(distanceKm), duration: durationStr };
   }
+  private async loadAndDisplayFavorites(): Promise<void> {
+  try {
+  
+    const favs: any[] = this.user.getPreferences();
+
+    if (!favs || favs.length === 0) return;
+
+    for (const fav of favs) {
+      const parkingObj: any = {
+        _id: fav.apiId ?? fav.id ?? fav.name,
+        _lib: fav.name,
+        _spots: Number(fav.total_spots ?? 0),
+        location: {
+          latitude: Number(fav.latitude),
+          longitude: Number(fav.longitude),
+        },
+      };
+
+      this.map.setFavoriteParkingMarker(parkingObj);
+    }
+  } catch (e) {
+    console.warn("loadAndDisplayFavorites failed:", e);
+  }
+}
 
   /** Suivi en temps réel de l'utilisateur vers le parking le plus proche */
   public startTracking(): void {
@@ -104,10 +134,18 @@ export class MobileApp {
       this.watchId = null;
     }
 
+    // Navigation mode: display only the target parking
+    try {
+      (this.map as any).showOnlyParking?.(this.nearestParking);
+    } catch (e) {}
+
     this.watchId = navigator.geolocation.watchPosition(
       async (pos) => {
         try {
-          this.userPos = new GeoLocation(pos.coords.latitude, pos.coords.longitude);
+          this.userPos = new GeoLocation(
+            pos.coords.latitude,
+            pos.coords.longitude
+          );
           this.map.setUserMarker(this.userPos, true);
 
           const route = await this.itineraryCtrl.getItinerary(
@@ -121,15 +159,21 @@ export class MobileApp {
             this.map.drawRoute(coords, this.userPos, false);
 
             const summary = route.features[0].properties.summary;
-            const distanceKm = (summary.distance / 1000).toFixed(1);
+            const distanceKm = (summary.distance / 200).toFixed(1);
             const durationStr =
               summary.duration < 3600
                 ? `${Math.round(summary.duration / 60)} min`
-                : `${Math.floor(summary.duration / 3600)} h ${Math.round((summary.duration % 3600) / 60)} min`;
+                : `${Math.floor(summary.duration / 3600)} h ${Math.round(
+                    (summary.duration % 3600) / 60
+                  )} min`;
 
-            if (routeInfoEl) routeInfoEl.textContent = `Distance : ${Number(distanceKm)} km | Durée : ${durationStr}`;
+            if (routeInfoEl)
+              routeInfoEl.textContent = `Distance : ${Number(
+                distanceKm
+              )} km | Durée : ${durationStr}`;
           } else {
-            if (routeInfoEl) routeInfoEl.textContent = "Itinéraire indisponible";
+            if (routeInfoEl)
+              routeInfoEl.textContent = "Itinéraire indisponible";
           }
         } catch (err) {
           console.error("Erreur watchPosition :", err);

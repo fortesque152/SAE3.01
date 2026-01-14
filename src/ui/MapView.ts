@@ -9,9 +9,15 @@ export class MapView {
   private userMarker: any = null;
   private userPosition: GeoLocation | null = null;
   private routeLayer: any = null;
+  private parkingMarkers: Map<string, any> = new Map();
+  private nearestParkingMarker: any = null;
 
   constructor() {
-    this.map = L.map("map").setView([49.11875, 6.17460], 13);
+    // Markers storage for navigation mode
+    this.parkingMarkers = new Map();
+    this.nearestParkingMarker = null;
+
+    this.map = L.map("map").setView([49.11875, 6.1746], 13);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap",
@@ -70,13 +76,16 @@ export class MapView {
     }
   }
 
-
   setParkingMarker(parking: any) {
     const marker = L.marker([
       parking.location.latitude,
-      parking.location.longitude
+      parking.location.longitude,
     ]).addTo(this.map);
- 
+
+    const id =
+      parking?._id ?? parking?.id ?? parking?.getId?.() ?? parking?.getid?.();
+    if (id) this.parkingMarkers.set(String(id), marker);
+
     marker.bindPopup(`
     <div class="popup-parking">
       <strong>${parking.getlib()}</strong><br>
@@ -105,11 +114,16 @@ export class MapView {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ parkingId: parking.getId(), lib : parking.getlib(),long : parking.getLocation().longitude,lat : parking.getLocation().latitude, spot : parking.getSpot()}),
+          body: JSON.stringify({
+            parkingId: parking.getId(),
+            lib: parking.getlib(),
+            long: parking.getLocation().longitude,
+            lat: parking.getLocation().latitude,
+            spot: parking.getSpot(),
+          }),
         });
 
         const data = await res.json();
-
 
         if (data.success) {
           btn.textContent = "⭐ Ajouté";
@@ -120,8 +134,6 @@ export class MapView {
       });
     });
   }
-
-
 
   setNearestParkingMarker(parking: Parking) {
     const iconP = L.icon({
@@ -135,15 +147,52 @@ export class MapView {
       shadowSize: [41, 41],
     });
 
-    const marker = L.marker([parking.location.latitude, parking.location.longitude], {
-      title: "Parking le plus proche",
-      icon: iconP,
-    }).addTo(this.map);
-    marker.bindPopup(`<strong>Parking le plus proche</strong><br>${parking.getlib()}`);
-    console.log(parking)
+    const marker = L.marker(
+      [parking.location.latitude, parking.location.longitude],
+      {
+        title: "Parking le plus proche",
+        icon: iconP,
+      }
+    ).addTo(this.map);
+
+    if (this.nearestParkingMarker) {
+      this.map.removeLayer(this.nearestParkingMarker);
+    }
+    this.nearestParkingMarker = marker;
+
+    marker.bindPopup(
+      `<strong>Parking le plus proche</strong><br>${parking.getlib()}`
+    );
+    console.log(parking);
   }
 
-  drawRoute(polyline: any, currentPos?: GeoLocation, fitBounds: boolean = true) {
+  /** Navigation mode: show only the target parking marker */
+  showOnlyParking(parking: any) {
+    const targetId =
+      parking?._id ?? parking?.id ?? parking?.getId?.() ?? parking?.getid?.();
+    for (const [id, marker] of this.parkingMarkers.entries()) {
+      if (String(id) !== String(targetId) && this.map.hasLayer(marker)) {
+        this.map.removeLayer(marker);
+      }
+    }
+    if (targetId && this.parkingMarkers.has(String(targetId))) {
+      const m = this.parkingMarkers.get(String(targetId));
+      if (m && !this.map.hasLayer(m)) m.addTo(this.map);
+    }
+  }
+
+  /** Exit navigation mode: show all parking markers */
+  showAllParkings() {
+    for (const marker of this.parkingMarkers.values()) {
+      if (marker && !this.map.hasLayer(marker)) marker.addTo(this.map);
+    }
+  }
+
+  drawRoute(
+    polyline: any,
+    currentPos?: GeoLocation,
+    fitBounds: boolean = true
+  ) {
     if (!polyline || !Array.isArray(polyline) || polyline.length === 0) return;
 
     const coords = polyline.map((c: any) => [c[1], c[0]]);
@@ -154,7 +203,11 @@ export class MapView {
       this.routeLayer = null;
     }
 
-    this.routeLayer = L.polyline(coords, { color: "blue", weight: 4, opacity: 0.8 }).addTo(this.map);
+    this.routeLayer = L.polyline(coords, {
+      color: "blue",
+      weight: 4,
+      opacity: 0.8,
+    }).addTo(this.map);
 
     // Ne fitBounds que si demandé
     if (fitBounds && this.routeLayer && !this.routeLayer.hasFitBounds) {
@@ -163,9 +216,41 @@ export class MapView {
     }
   }
 
+  public setFavoriteParkingMarker(parking: any) {
+    const iconFav = L.icon({
+      iconUrl:
+        "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png",
+      shadowUrl:
+        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+    });
+
+    const marker = L.marker(
+      [parking.location.latitude, parking.location.longitude],
+      { icon: iconFav, title: "Favorite parking" }
+    ).addTo(this.map);
+
+    // on le stocke aussi dans parkingMarkers si tu veux pouvoir le cacher/montrer
+    const id =
+      parking._id ?? parking.id ?? parking.getId?.() ?? parking.getid?.();
+    if (id) this.parkingMarkers.set(id, marker);
+
+    marker.bindPopup(
+      `<strong>⭐ ${
+        parking.getLib?.() ?? parking._lib ?? "Favorite parking"
+      }</strong>`
+    );
+  }
+
   public centerOnUser(position: GeoLocation) {
     if (this.map) {
-      this.map.setView([position.latitude, position.longitude], this.map.getZoom());
+      this.map.setView(
+        [position.latitude, position.longitude],
+        this.map.getZoom()
+      );
     }
   }
 }

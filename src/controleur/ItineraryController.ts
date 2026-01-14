@@ -1,36 +1,51 @@
 import { GeoLocation } from "../modele/GeoLocation.js";
 
 export class ItineraryController {
-    private apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjQ1NWJkNzU1OWM1YzQ4YzQ5YzEzYTBkNTY4ZTY5OWU4IiwiaCI6Im11cm11cjY0In0=";
+    // ORS key kept for reference (not used anymore on devweb due to server restrictions)
+    private apiKey = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyND...";
 
-
+    /**
+     * Get an itinerary between two points.
+     *
+     * IMPORTANT: On devweb (IUT), proxying to OpenRouteService is blocked (HTTP 403).
+     * We therefore use OSRM public routing (GET) which works directly from the browser.
+     * This method returns an ORS-like GeoJSON FeatureCollection so the rest of the app
+     * (MapView + MobileApp) does not need to change.
+     */
     async getItinerary(start: GeoLocation, end: GeoLocation): Promise<any> {
-        const url = "./vue/route.php";
+        const url =
+            "https://router.project-osrm.org/route/v1/driving/" +
+            `${start.longitude},${start.latitude};${end.longitude},${end.latitude}` +
+            "?overview=full&geometries=geojson";
 
-
-
-        const body = {
-            coordinates: [
-                [start.longitude, start.latitude],
-                [end.longitude, end.latitude]
-            ]
-        };
-
-
-        const res = await fetch(url, {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-});
-
+        const res = await fetch(url);
         if (!res.ok) {
-            // Fournir un message d'erreur plus explicite pour le debug côté client
             const text = await res.text();
             throw new Error(`Itinerary API error ${res.status}: ${text}`);
         }
 
-        return res.json();
+        const data = await res.json();
+
+        const route = data?.routes?.[0];
+        if (!route?.geometry?.coordinates) {
+            throw new Error("Itinerary API error: invalid response");
+        }
+
+        // Convert OSRM response to the ORS-like shape expected by MobileApp.showRoute()
+        return {
+            type: "FeatureCollection",
+            features: [
+                {
+                    type: "Feature",
+                    geometry: route.geometry,
+                    properties: {
+                        summary: {
+                            distance: route.distance, // meters
+                            duration: route.duration, // seconds
+                        },
+                    },
+                },
+            ],
+        };
     }
 }

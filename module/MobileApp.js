@@ -11,6 +11,7 @@ export class MobileApp {
         this.watchId = null;
         this.lastPos = null;
         this.routeRecalcThresholdMeters = 5;
+        this.parkingfav = [];
         this.map = new MapView();
         this.locCtrl = new LocationController();
         this.parkCtrl = new ParkingController();
@@ -24,6 +25,7 @@ export class MobileApp {
             const userPos = await this.locCtrl.getUserLocation();
             this.userPos = userPos;
             this.map.setUserMarker(userPos);
+            await this.loadAndDisplayFavorites();
             // Récupère les parkings filtrés selon le profil utilisateur
             const parkings = await this.parkCtrl.getParkings(this.user, userPos);
             if (!parkings || parkings.length === 0) {
@@ -74,6 +76,28 @@ export class MobileApp {
             : `${Math.floor(summary.duration / 3600)} h ${Math.round((summary.duration % 3600) / 60)} min`;
         return { distanceKm: Number(distanceKm), duration: durationStr };
     }
+    async loadAndDisplayFavorites() {
+        try {
+            const favs = this.user.getPreferences();
+            if (!favs || favs.length === 0)
+                return;
+            for (const fav of favs) {
+                const parkingObj = {
+                    _id: fav.apiId ?? fav.id ?? fav.name,
+                    _lib: fav.name,
+                    _spots: Number(fav.total_spots ?? 0),
+                    location: {
+                        latitude: Number(fav.latitude),
+                        longitude: Number(fav.longitude),
+                    },
+                };
+                this.map.setFavoriteParkingMarker(parkingObj);
+            }
+        }
+        catch (e) {
+            console.warn("loadAndDisplayFavorites failed:", e);
+        }
+    }
     /** Suivi en temps réel de l'utilisateur vers le parking le plus proche */
     startTracking() {
         if (!navigator.geolocation || !this.nearestParking?.location)
@@ -82,6 +106,11 @@ export class MobileApp {
             navigator.geolocation.clearWatch(this.watchId);
             this.watchId = null;
         }
+        // Navigation mode: display only the target parking
+        try {
+            this.map.showOnlyParking?.(this.nearestParking);
+        }
+        catch (e) { }
         this.watchId = navigator.geolocation.watchPosition(async (pos) => {
             try {
                 this.userPos = new GeoLocation(pos.coords.latitude, pos.coords.longitude);
@@ -92,7 +121,7 @@ export class MobileApp {
                     const coords = route.features[0].geometry.coordinates;
                     this.map.drawRoute(coords, this.userPos, false);
                     const summary = route.features[0].properties.summary;
-                    const distanceKm = (summary.distance / 1000).toFixed(1);
+                    const distanceKm = (summary.distance / 200).toFixed(1);
                     const durationStr = summary.duration < 3600
                         ? `${Math.round(summary.duration / 60)} min`
                         : `${Math.floor(summary.duration / 3600)} h ${Math.round((summary.duration % 3600) / 60)} min`;
