@@ -1,0 +1,13 @@
+# Autoriser toutes les méthodes HTTP
+<Limit GET POST PUT DELETE OPTIONS>
+    Require all granted
+</Limit>
+
+# Activer le module rewrite
+RewriteEngine On
+
+# Permettre toutes les méthodes HTTP
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type"
+</IfModule>
