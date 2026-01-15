@@ -17,7 +17,7 @@ public/js/MobileApp.js
 
 # Dependencies
 node_modules/
-vendor/
+
 
 # Backups
 backup/
