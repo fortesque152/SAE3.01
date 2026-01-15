@@ -6,7 +6,7 @@
     "module": "ES2020",
     "moduleResolution": "bundler",
     "rootDir": "./src",
-    "outDir": "./module",
+    "outDir": "./public/js",
     "strict": true,
     "esModuleInterop": true,
     "lib": ["DOM", "ES2020"],

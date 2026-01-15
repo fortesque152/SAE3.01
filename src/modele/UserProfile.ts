@@ -7,6 +7,13 @@ export interface VehicleType {
 export interface Preference {
   key: string;
   value: string;
+  // Favorite parking fields
+  apiId?: string;
+  id?: string;
+  name?: string;
+  total_spots?: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface ProfileData {
@@ -53,7 +60,7 @@ export class UserProfile {
 
   async fetchVehicles(): Promise<VehicleType[]> {
     try {
-      const res = await fetch("./vue/get_vehicule.php", { credentials: "include" });
+      const res = await fetch("../app/api/vehicles.php?t=" + Date.now(), { credentials: "include" });
       const data = await res.json();
 
       if (!data.success) return [];
@@ -64,7 +71,7 @@ export class UserProfile {
         tab.push({
           vehicle_name: v.name,
           name: v.type,
-          id : v.id
+          id: v.vehicle_type_id
         });
       }
       return tab;
@@ -81,10 +88,10 @@ export class UserProfile {
     this._currentVehicle = this._vehicles.length > 0 ? this._vehicles[0] : null;
   }
 
-  canPark(properties: any): boolean {
-    const restriction = (properties.restriction_type || "").toLowerCase();
-    const validPermits = (properties.valid_parking_permits || "").toLowerCase();
-    const spaces = parseInt(properties.parking_spaces) || 0;
+  canPark(properties: Record<string, unknown>): boolean {
+    const restriction = String(properties.restriction_type || "").toLowerCase();
+    const validPermits = String(properties.valid_parking_permits || "").toLowerCase();
+    const spaces = parseInt(String(properties.parking_spaces)) || 0;
     if (spaces < 1) return false;
     if (!this._currentVehicle) return false;
 

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking-SAE</title>
+    <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../vendor/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="../styles/variables.css">
+    <link rel="stylesheet" href="../styles/base.css">
+    <link rel="stylesheet" href="../styles/map.css">
+    <link rel="stylesheet" href="../styles/components.css">
+    <link rel="stylesheet" href="../styles/navigation.css">
+  </head>
+  <body>
+    <!-- Loader -->
+    <div id="loaderContainer">
+      <span id="loader"></span>
+      <h4>Chargement en cours...</h4>
+    </div>
+
+    <!-- Carte -->
+    <div id="map"></div>
+
+    <!-- Bouton panel -->
+    <button id="panelToggle">Profil</button>
+
+    <!-- Panel utilisateur -->
+    <div id="userPanel">
+      <div id="panelHeader">
+        <h3>Profil</h3>
+        <button id="panelClose">&times;</button>
+      </div>
+
+      <p id="userName"></p>
+
+      <h4>Véhicules</h4>
+      <div id="vehicleType"></div>
+      <button id="showAddVehicleBtn">Ajouter un véhicule</button>
+      <button id="removeVehicleBtn" class="danger">Supprimer le véhicule sélectionné</button>
+
+      <form id="addVehicleForm">
+        <input
+          type="text"
+          id="vehicleName"
+          placeholder="Nom du véhicule"
+          required
+        >
+        <select id="vehicleTypeSelect">
+          <option value="car">Voiture</option>
+          <option value="electric">Électrique</option>
+          <option value="motorcycle">Moto</option>
+        </select>
+        <button type="submit">Ajouter</button>
+        
+      </form>
+
+      <h4>Parkings favoris</h4>
+      <div id="favoritesList"></div>
+
+      <!-- Bouton de déconnexion -->
+      <button id="logoutBtn" class="btn btn-danger" style="width: 100%; margin-top: 20px;">Se déconnecter</button>
+    </div>
+
+    <!-- Infos itinéraire -->
+    <div id="routeInfo"></div>
+    
+    <!-- Panel de navigation avec instructions -->
+    <div id="navigationPanel" style="display:none">
+      <div id="currentInstruction">
+        <div id="instructionIcon">→</div>
+        <div id="instructionText">En attente...</div>
+        <div id="instructionDistance">-- m</div>
+      </div>
+      <div id="nextInstruction">
+        <span>Puis : </span><span id="nextInstructionText">--</span>
+      </div>
+      <div id="instructionsList"></div>
+    </div>
+
+    <button id="routeBtn">Aller au parking le plus proche</button>
+    <button id="cancelBtn" style="display:none">Annuler le guidage</button>
+
+    <script src="../vendor/leaflet/dist/leaflet.js"></script>
+    <script type="module" src="./js/ui/initApp.js"></script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+/* Imports des modules CSS */
+@import url('./variables.css');
+@import url('./base.css');
+@import url('./map.css');
+@import url('./components.css');
+
+

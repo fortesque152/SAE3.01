@@ -1,20 +1,30 @@
+/// <reference lib="dom" />
+
 import { GeoLocation } from "../modele/GeoLocation.js";
 import { Parking } from "../modele/Parking.js";
-import { LocationController } from "../controleur/LocationController.js";
-
+import { ILocationService } from "../interfaces/ILocationService.js";
+import { IMapView } from "../interfaces/IMapView.js";
+import type { LeafletMap, LeafletMarker, LeafletPolyline, LeafletEvent, ParkingObject } from "../types/index.js";
 
 declare const L: any;
 
-export class MapView {
-  private map: any;
-  private userMarker: any = null;
+/**
+ * Dependency Inversion Principle (DIP):
+ * Implement the IMapView interface
+ * Single Responsibility Principle (SRP):
+ * Only responsible for map visualization and user interaction
+ */
+export class MapView implements IMapView {
+  private map: LeafletMap;
+  private userMarker: LeafletMarker | null = null;
   private userPosition: GeoLocation | null = null;
-  private routeLayer: any = null;
-  private parkingMarkers: Map<string, any> = new Map();
-  private nearestParkingMarker: any = null;
+  private routeLayer: LeafletPolyline | null = null;
+  private parkingMarkers: Map<string, LeafletMarker> = new Map();
+  private nearestParkingMarker: LeafletMarker | null = null;
+  private locationService: ILocationService;
 
-  constructor() {
-    // Markers storage for navigation mode
+  constructor(locationService: ILocationService) {
+    this.locationService = locationService;
     this.parkingMarkers = new Map();
     this.nearestParkingMarker = null;
 
@@ -30,8 +40,7 @@ export class MapView {
 
   private async initMapCenter() {
     try {
-      const locationController = new LocationController();
-      this.userPosition = await locationController.getUserLocation();
+      this.userPosition = await this.locationService.getUserLocation();
 
       this.map.setView(
         [this.userPosition.latitude, this.userPosition.longitude],
@@ -44,53 +53,90 @@ export class MapView {
     }
   }
 
-  async setUserMarker(location?: GeoLocation, recenter: boolean = true) {
-    const userIcon = L.icon({
-      iconUrl:
-        "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png",
-      shadowUrl:
-        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41],
+  setUserMarker(location?: GeoLocation, recenter: boolean = true): Promise<void> {
+    return Promise.resolve().then(() => {
+      const userIcon = L.icon({
+        iconUrl:
+          "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png",
+        shadowUrl:
+          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+      });
+
+      if (location) this.userPosition = location;
+      if (!this.userPosition) return;
+
+      if (!this.userMarker) {
+        this.userMarker = L.marker(
+          [this.userPosition.latitude, this.userPosition.longitude],
+          { title: "Votre position", icon: userIcon }
+        ).addTo(this.map);
+        if (this.userMarker) {
+          this.userMarker.bindPopup(`<strong>Votre position</strong><br>`);
+        }
+      } else {
+        this.userMarker.setLatLng([
+          this.userPosition.latitude,
+          this.userPosition.longitude,
+        ]);
+      }
+
+      if (recenter) {
+        this.centerOnUser(this.userPosition);
+      }
     });
-
-    if (location) this.userPosition = location;
-    if (!this.userPosition) return;
-
-    if (!this.userMarker) {
-      this.userMarker = L.marker(
-        [this.userPosition.latitude, this.userPosition.longitude],
-        { title: "Votre position", icon: userIcon }
-      ).addTo(this.map);
-      this.userMarker.bindPopup(`<strong>Votre position</strong><br>`);
-    } else {
-      this.userMarker.setLatLng([
-        this.userPosition.latitude,
-        this.userPosition.longitude,
-      ]);
-    }
-
-    if (recenter) {
-      this.centerOnUser(this.userPosition);
-    }
   }
 
-  setParkingMarker(parking: any) {
+  setParkingMarker(parking: Parking) {
     const marker = L.marker([
       parking.location.latitude,
       parking.location.longitude,
     ]).addTo(this.map);
 
-    const id =
-      parking?._id ?? parking?.id ?? parking?.getId?.() ?? parking?.getid?.();
+    const id = parking.getId();
     if (id) this.parkingMarkers.set(String(id), marker);
+
+    // Vérifier si on a des données de disponibilité
+    const availableSpots = (parking as any).availableSpots;
+    const hasAvailability = availableSpots !== undefined && availableSpots !== null;
+
+    let availabilityHTML = '';
+    if (hasAvailability) {
+      const totalSpots = (parking as any).totalSpots || availableSpots;
+      const percentage = totalSpots > 0 ? (availableSpots / totalSpots) * 100 : 0;
+
+      let availabilityClass = 'availability-low';
+      if (percentage > 30) {
+        availabilityClass = 'availability-high';
+      } else if (percentage > 10) {
+        availabilityClass = 'availability-medium';
+      }
+
+      availabilityHTML = `
+        <div class="${availabilityClass}" style="margin: 8px 0; padding: 8px; border-radius: 4px;">
+          <strong>Places disponibles:</strong> ${availableSpots}${totalSpots ? ` / ${totalSpots}` : ''}<br>
+          <span style="font-size: 0.85em;">● Temps réel</span>
+        </div>
+      `;
+    } else {
+      availabilityHTML = `
+        <div style="margin: 8px 0; padding: 8px; background: #f0f0f0; border-radius: 4px; color: #666;">
+          ℹ️ Données de disponibilité non disponibles
+        </div>
+      `;
+    }
 
     marker.bindPopup(`
     <div class="popup-parking">
       <strong>${parking.getlib()}</strong><br>
-      <button class="add-fav-btn">
+      ${availabilityHTML}
+      <button class="navigate-btn" style="margin-top: 8px; width: 100%; padding: 8px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        🚗 M'y rendre
+      </button>
+      <button class="add-fav-btn" style="margin-top: 4px; width: 100%; padding: 8px;">
         ⭐ Ajouter aux favoris
       </button>
     </div>
@@ -103,15 +149,31 @@ export class MapView {
       );
     });
 
-    // IMPORTANT : récupération correcte du bouton
-    marker.on("popupopen", (e: any) => {
+    // IMPORTANT : récupération correcte des boutons
+    marker.on("popupopen", (e: LeafletEvent) => {
+      if (!e.popup) return;
       const popupEl = e.popup.getElement();
+
+      // Bouton "M'y rendre"
+      const navBtn = popupEl.querySelector(".navigate-btn") as HTMLButtonElement;
+      if (navBtn) {
+        navBtn.addEventListener("click", () => {
+          // Fermer le popup
+          marker.closePopup();
+
+          document.dispatchEvent(
+            new CustomEvent("navigateToParking", { detail: parking })
+          );
+        });
+      }
+
+      // Bouton favoris
       const btn = popupEl.querySelector(".add-fav-btn") as HTMLButtonElement;
 
       if (!btn) return;
       btn.addEventListener("click", async () => {
         try {
-          const res = await fetch("./vue/add_favorite.php", {
+          const res = await fetch("../app/api/favorites.php", {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
@@ -183,9 +245,8 @@ export class MapView {
   }
 
   /** Navigation mode: show only the target parking marker */
-  showOnlyParking(parking: any) {
-    const targetId =
-      parking?._id ?? parking?.id ?? parking?.getId?.() ?? parking?.getid?.();
+  showOnlyParking(parking: Parking) {
+    const targetId = parking.getId();
     for (const [id, marker] of this.parkingMarkers.entries()) {
       if (String(id) !== String(targetId) && this.map.hasLayer(marker)) {
         this.map.removeLayer(marker);
@@ -205,13 +266,13 @@ export class MapView {
   }
 
   drawRoute(
-    polyline: any,
+    polyline: [number, number][],
     currentPos?: GeoLocation,
     fitBounds: boolean = true
   ) {
     if (!polyline || !Array.isArray(polyline) || polyline.length === 0) return;
 
-    const coords = polyline.map((c: any) => [c[1], c[0]]);
+    const coords = polyline.map((c) => [c[1], c[0]] as [number, number]);
     if (currentPos) coords.unshift([currentPos.latitude, currentPos.longitude]);
 
     if (this.routeLayer) {
@@ -225,14 +286,17 @@ export class MapView {
       opacity: 0.8,
     }).addTo(this.map);
 
-    // Ne fitBounds que si demandé
-    if (fitBounds && this.routeLayer && !this.routeLayer.hasFitBounds) {
-      this.map.fitBounds(this.routeLayer.getBounds(), { padding: [50, 50] });
-      (this.routeLayer as any).hasFitBounds = true;
+    // Zoom automatique sur la route lors de la première navigation
+    if (fitBounds && this.routeLayer) {
+      const padding = window.innerWidth < 768 ? [20, 20] : [30, 30];
+      this.map.fitBounds(this.routeLayer.getBounds(), {
+        padding,
+        maxZoom: 17 // Zoom maximum pour une meilleure visibilité lors de la navigation
+      });
     }
   }
 
-  public setFavoriteParkingMarker(parking: any) {
+  public setFavoriteParkingMarker(parking: ParkingObject) {
     const iconFav = L.icon({
       iconUrl:
         "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png",
@@ -250,14 +314,73 @@ export class MapView {
     ).addTo(this.map);
 
     // on le stocke aussi dans parkingMarkers si tu veux pouvoir le cacher/montrer
-    const id =
-      parking._id ?? parking.id ?? parking.getId?.() ?? parking.getid?.();
+    const id = parking._id;
     if (id) this.parkingMarkers.set(id, marker);
 
-    marker.bindPopup(
-      `<strong>⭐ ${parking.getLib?.() ?? parking._lib ?? "Favorite parking"
-      }</strong>`
-    );
+    // Vérifier si on a des données de disponibilité
+    const availableSpots = (parking as any).availableSpots;
+    const totalSpots = (parking as any)._total_spots;
+    const hasAvailability = availableSpots !== undefined && availableSpots !== null;
+
+    let availabilityHTML = '';
+    if (hasAvailability) {
+      const percentage = totalSpots > 0 ? (availableSpots / totalSpots) * 100 : 0;
+
+      let availabilityClass = 'availability-low';
+      if (percentage > 30) {
+        availabilityClass = 'availability-high';
+      } else if (percentage > 10) {
+        availabilityClass = 'availability-medium';
+      }
+
+      availabilityHTML = `
+        <div class="${availabilityClass}" style="margin: 8px 0; padding: 8px; border-radius: 4px;">
+          <strong>Places disponibles:</strong> ${availableSpots}${totalSpots ? ` / ${totalSpots}` : ''}<br>
+          <span style="font-size: 0.85em;">● Temps réel</span>
+        </div>
+      `;
+    } else {
+      availabilityHTML = `
+        <div style="margin: 8px 0; padding: 8px; background: #f0f0f0; border-radius: 4px; color: #666;">
+          ℹ️ Données de disponibilité non disponibles
+        </div>
+      `;
+    }
+
+    marker.bindPopup(`
+      <div class="popup-parking">
+        <strong>⭐ ${parking.getLib?.() ?? parking._lib ?? "Favorite parking"}</strong><br>
+        ${availabilityHTML}
+        <button class="navigate-btn" style="margin-top: 8px; width: 100%; padding: 8px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+          🚗 M'y rendre
+        </button>
+      </div>
+    `);
+
+    // Ajouter l'événement pour le bouton "M'y rendre"
+    marker.on("popupopen", (e: LeafletEvent) => {
+      if (!e.popup) return;
+      const popupEl = e.popup.getElement();
+
+      const navBtn = popupEl.querySelector(".navigate-btn") as HTMLButtonElement;
+      if (navBtn) {
+        navBtn.addEventListener("click", () => {
+          // Fermer le popup
+          marker.closePopup();
+
+          // Créer une instance Parking à partir de l'objet
+          const parkingInstance = new Parking(
+            parking._id,
+            parking._lib,
+            new GeoLocation(parking.location.latitude, parking.location.longitude),
+            parking._spots
+          );
+          document.dispatchEvent(
+            new CustomEvent("navigateToParking", { detail: parkingInstance })
+          );
+        });
+      }
+    });
   }
 
   public centerOnUser(position: GeoLocation) {
@@ -266,6 +389,31 @@ export class MapView {
         [position.latitude, position.longitude],
         this.map.getZoom()
       );
+    }
+  }
+
+  /**
+   * Centre la carte sur l'utilisateur avec un zoom adapté à la navigation
+   */
+  public centerOnUserForNavigation(position: GeoLocation) {
+    if (this.map) {
+      const currentZoom = this.map.getZoom();
+      const navigationZoom = Math.max(currentZoom, 16); // Minimum zoom level 16 pour navigation
+      this.map.setView(
+        [position.latitude, position.longitude],
+        navigationZoom
+      );
+    }
+  }
+
+  public clearRoute(): void {
+    if (this.routeLayer) {
+      this.map.removeLayer(this.routeLayer);
+      this.routeLayer = null;
+    }
+    if (this.nearestParkingMarker) {
+      this.map.removeLayer(this.nearestParkingMarker);
+      this.nearestParkingMarker = null;
     }
   }
 }

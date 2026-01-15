@@ -1,0 +1,287 @@
+/* ==================== Map Styles ==================== */
+/* Styles pour Leaflet et la carte interactive */
+
+#map-container,
+#map {
+  height: 100%;
+  width: 100%;
+  background-color: var(--color-gray-100);
+  z-index: var(--z-map);
+}
+
+/* ==================== Leaflet Popup Customization ==================== */
+
+.leaflet-popup {
+  color: var(--color-gray-900);
+  min-width: 250px;
+  max-width: 320px !important;
+}
+
+.leaflet-popup-content-wrapper {
+  padding: 0;
+  border-radius: var(--radius-lg);
+  background: var(--color-white);
+  box-shadow: var(--shadow-xl);
+  font-family: var(--font-sans);
+  border: 1px solid var(--color-gray-200);
+  overflow: hidden;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  padding: var(--spacing-lg);
+  min-width: 200px;
+}
+
+.leaflet-popup-close-button {
+  color: var(--color-gray-900) !important;
+  font-size: 1.25rem !important;
+  padding: var(--spacing-sm) !important;
+  transition: opacity var(--transition-fast);
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 1 !important;
+}
+
+.leaflet-popup-close-button:hover {
+  opacity: 0.7;
+  background: transparent !important;
+  color: var(--color-gray-900) !important;
+}
+
+.leaflet-popup-tip {
+  background: var(--color-white);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-gray-200);
+}
+
+/* ==================== Popup Content ==================== */
+
+.popup-parking {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+}
+
+
+.parking-type {
+  font-size: 0.8rem;
+  color: var(--color-gray-500);
+  text-transform: capitalize;
+  margin-top: calc(var(--spacing-xs) * -1);
+}
+
+.popup-stats {
+  padding: var(--spacing-lg);
+  background: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gray-200);
+  margin: 0;
+}
+
+.stat-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--color-gray-600);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-gray-900);
+}
+
+.stat-trend {
+  font-size: 1.25rem;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Status colors */
+.availability-high .stat-value {
+  color: var(--color-success);
+}
+
+.availability-medium .stat-value {
+  color: var(--color-warning);
+}
+
+.availability-low .stat-value {
+  color: var(--color-error);
+}
+
+.popup-info {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.info-item {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-gray-100);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  color: var(--color-gray-700);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.popup-parking p {
+  font-size: 0.875rem;
+  color: var(--color-gray-600);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.popup-parking strong {
+  color: var(--color-gray-900);
+  font-weight: 600;
+}
+
+.popup-parking button {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  width: 100%;
+  border: 2px solid var(--color-gray-900);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: var(--color-gray-900);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.popup-parking button:hover {
+  background: var(--color-gray-900);
+  color: var(--color-white);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.popup-parking button:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ==================== Leaflet Controls ==================== */
+
+.leaflet-control-container .leaflet-top,
+.leaflet-control-container .leaflet-bottom {
+  z-index: var(--z-controls);
+}
+
+.leaflet-bar {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-md);
+}
+
+.leaflet-bar a {
+  background: var(--color-white);
+  color: var(--color-gray-900);
+  border-bottom: 1px solid var(--color-gray-200);
+  transition: background var(--transition-fast);
+}
+
+.leaflet-bar a:first-child {
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+}
+
+.leaflet-bar a:last-child {
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  border-bottom: none;
+}
+
+.leaflet-bar a:hover {
+  background: var(--color-gray-50);
+  color: var(--color-gray-900);
+}
+
+.leaflet-bar a.leaflet-disabled {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-400);
+  cursor: default;
+}
+
+/* ==================== Leaflet Markers ==================== */
+
+.leaflet-marker-icon {
+  transition: transform var(--transition-base), filter var(--transition-base);
+}
+
+.leaflet-marker-icon:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+/* ==================== Attribution ==================== */
+
+.leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(4px);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px !important;
+  font-size: 0.7rem !important;
+  border: 1px solid var(--color-gray-200);
+}
+
+/* ==================== Responsive Map ==================== */
+
+@media (max-width: 768px) {
+  .leaflet-popup {
+    max-width: 280px !important;
+  }
+
+  .leaflet-popup-content {
+    padding: var(--spacing-md);
+  }
+
+  .popup-parking h3 {
+    font-size: 1rem;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+}
+
+/* ==================== Availability Status ==================== */
+
+.availability-high {
+  background: #d4edda;
+  color: #155724;
+  border-left: 4px solid #28a745;
+}
+
+.availability-medium {
+  background: #fff3cd;
+  color: #856404;
+  border-left: 4px solid #ffc107;
+}
+
+.availability-low {
+  background: #f8d7da;
+  color: #721c24;
+  border-left: 4px solid #dc3545;
+}

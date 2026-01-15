@@ -1,0 +1,228 @@
+/* BLACK AND WHITE THEME - SOLID Design */
+/* Import des variables CSS */
+@import url('../variables.css');
+
+/* Style global */
+body {
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+}
+
+/* Container principal */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--color-gray-50);
+  padding: var(--spacing-lg);
+}
+
+/* Carte du formulaire */
+.card {
+  background-color: var(--color-white);
+  padding: var(--spacing-2xl) var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid var(--color-gray-200);
+  animation: fadeIn var(--transition-fast) ease-out;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.logoContainer {
+  display: inline-block;
+  margin-bottom: var(--spacing-md);
+  transition: transform var(--transition-base) ease;
+}
+
+.logoContainer:hover {
+  transform: scale(1.05);
+}
+
+.logoContainer img {
+  width: 6rem;
+  height: auto;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-black);
+  margin-bottom: 0.375rem;
+  letter-spacing: -0.025em;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--color-gray-600);
+  margin: 0;
+}
+
+/* Message d'erreur */
+.errorMessage {
+  background-color: var(--color-black);
+  color: var(--color-white);
+  padding: 0.875rem var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  animation: slideIn var(--transition-fast) ease-out;
+}
+
+/* Formulaire */
+.form {
+  width: 100%;
+}
+
+.formGroup {
+  margin-bottom: 1.25rem;
+}
+
+.formGroupLast {
+  margin-bottom: 1.75rem;
+}
+
+.label {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-gray-700);
+  letter-spacing: -0.01em;
+}
+
+.input {
+  width: 100%;
+  padding: 0.875rem var(--spacing-md);
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  font-family: var(--font-sans);
+  transition: all var(--transition-base) cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: var(--color-white);
+  color: var(--color-gray-900);
+  box-sizing: border-box;
+}
+
+.input::placeholder {
+  color: var(--color-gray-400);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-black);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+.input:hover:not(:focus) {
+  border-color: var(--color-gray-300);
+}
+
+/* Bouton */
+.button {
+  width: 100%;
+  padding: 0.875rem var(--spacing-lg);
+  background-color: var(--color-black);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base) cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: -0.01em;
+}
+
+.button:hover:not(:disabled) {
+  background-color: var(--color-gray-800);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Footer */
+.footer {
+  margin-top: 1.75rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--color-gray-200);
+  text-align: center;
+}
+
+.footerText {
+  font-size: 0.875rem;
+  color: var(--color-gray-600);
+  margin: 0;
+}
+
+.toggleButton {
+  background: none;
+  border: none;
+  color: var(--color-black);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity var(--transition-base) ease;
+  padding: 0;
+}
+
+.toggleButton:hover {
+  opacity: 0.7;
+  text-decoration: underline;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .card {
+    padding: var(--spacing-xl) var(--spacing-lg);
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .logoContainer img {
+    width: 5rem;
+  }
+}

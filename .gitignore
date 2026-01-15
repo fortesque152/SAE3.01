@@ -1,1 +1,37 @@
-.vscode
+# IDE
+.vscode/
+.idea/
+
+# Environment
+.env
+
+# Compiled TypeScript (now in public/js/)
+module/
+public/js/config/
+public/js/controleur/
+public/js/modele/
+public/js/services/
+public/js/types/
+public/js/ui/
+public/js/MobileApp.js
+
+# Dependencies
+node_modules/
+vendor/
+
+# Backups
+backup/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
