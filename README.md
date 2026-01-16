@@ -1,20 +1,23 @@
-*README généré par IA*
+# Utilisation : 
+le vpn de l'iut et necessaire cisco 
+
+https://devweb.iutmetz.univ-lorraine.fr/~e27844u/SAE/SAE3.01/
 
 # Parking SAE - Application de Gestion de Parkings
 
 Application web de navigation et gestion de parkings avec géolocalisation en temps réel. Trouvez les parkings disponibles autour de vous, calculez des itinéraires optimisés, gérez vos véhicules et sauvegardez vos parkings favoris. 
 
 **Fonctionnalités principales :**
-- 🗺️ Carte interactive (Leaflet) avec parkings en France (OpenStreetMap) et Londres (16MB GeoJSON)
-- 📍 Géolocalisation temps réel et calcul automatique du parking le plus proche
-- 🚗 Gestion multi-véhicules (voiture, électrique, moto) avec filtrage des parkings compatibles
-- 🧭 Navigation turn-by-turn avec OSRM et suivi GPS en temps réel
-- ⭐ Sauvegarde de parkings favoris par profil utilisateur
-- 🔐 Authentification sécurisée et gestion de comptes
+-Carte interactive (Leaflet) avec parkings en France (OpenStreetMap) et Londres (16MB GeoJSON)
+- Géolocalisation temps réel et calcul automatique du parking le plus proche
+- Gestion multi-véhicules (voiture, électrique, moto) avec filtrage des parkings compatibles
+- Navigation turn-by-turn avec OSRM et suivi GPS en temps réel
+- Sauvegarde de parkings favoris par profil utilisateur
+- Authentification sécurisée et gestion de comptes
 
 **Architecture :** Frontend SOLID (TypeScript) + Backend MVC (PHP) avec API REST.
 
-## 🏗️ Architecture du Projet
+##  Architecture du Projet
 
 ### Structure des Dossiers
 
@@ -134,7 +137,7 @@ SAE3.01/
 └── README.md
 ```
 
-## 🚀 Installation
+## Installation
 
 ### Prérequis
 
@@ -176,7 +179,7 @@ SAE3.01/
    - Point d'entrée : `index.php`
 
 
-## 🎨 Design System
+## Design System
 
 Le projet utilise un design system cohérent basé sur des variables CSS :
 
@@ -186,7 +189,7 @@ Le projet utilise un design system cohérent basé sur des variables CSS :
 
 Voir [styles/variables.css](styles/variables.css) pour les détails.
 
-## 🏛️ Principes SOLID / MVC
+## Principes SOLID / MVC
 
 ### Backend PHP (MVC)
 - **Models** : Gestion des données (User, Profile, Parking, Favorite)
@@ -201,7 +204,7 @@ Voir [styles/variables.css](styles/variables.css) pour les détails.
 - **D**ependency Inversion : Dépendance aux abstractions, pas aux implémentations
 
 
-## 🔒 Sécurité
+## Sécurité
 
 - ✅ Mots de passe hashés avec `password_hash()`
 - ✅ Requêtes préparées (PDO) contre les injections SQL
