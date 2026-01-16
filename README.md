@@ -1,5 +1,5 @@
 # Utilisation : 
-le vpn de l'iut et necessaire cisco 
+le vpn Cisco de l'iut est nécessaire.  
 
 https://devweb.iutmetz.univ-lorraine.fr/~e27844u/SAE/SAE3.01/
 
